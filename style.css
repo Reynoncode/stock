@@ -13,7 +13,6 @@
   --gray-05: #f4f4f4;
   --white:   #ffffff;
 
-  /* status / marker colours — matte, not neon */
   --blue:    #3b82f6;
   --blue-bg: #eff6ff;
   --green:   #22c55e;
@@ -133,6 +132,7 @@ a { text-decoration: none; color: inherit; }
   cursor: pointer;
   padding: 4px;
   color: var(--black);
+  flex-shrink: 0;
 }
 
 .topbar-title {
@@ -230,6 +230,7 @@ a { text-decoration: none; color: inherit; }
   font-size: 12px;
   color: var(--gray-50);
   cursor: pointer;
+  white-space: nowrap;
 }
 .card-link:hover { color: var(--black); }
 
@@ -287,16 +288,23 @@ a { text-decoration: none; color: inherit; }
 }
 .section-row.gap-16 { gap: 16px; }
 
-.flex-1 { flex: 1; }
-.flex-2 { flex: 2; }
+.flex-1 { flex: 1; min-width: 0; }
+.flex-2 { flex: 2; min-width: 0; }
 
 /* ===========================
-   TABLE
+   TABLE — scroll wrapper
    =========================== */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .data-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+  min-width: 480px; /* cədvəl sıxılmaq əvəzinə scroll edir */
 }
 
 .data-table thead th {
@@ -358,7 +366,7 @@ a { text-decoration: none; color: inherit; }
 .search-wrap {
   position: relative;
   flex: 1;
-  min-width: 200px;
+  min-width: 180px;
 }
 .search-wrap i {
   position: absolute;
@@ -436,6 +444,7 @@ select:focus, input[type="date"]:focus { border-color: var(--black); }
   flex-direction: column;
   gap: 4px;
   flex: 1;
+  min-width: 0;
 }
 .form-group label {
   font-size: 12px;
@@ -465,7 +474,6 @@ select:focus, input[type="date"]:focus { border-color: var(--black); }
   gap: 12px;
   margin-bottom: 12px;
 }
-.form-group + .form-group { /* used inside form-row */ }
 
 .req { color: var(--red); }
 
@@ -597,29 +605,122 @@ select:focus, input[type="date"]:focus { border-color: var(--black); }
 .status-msg.err { background: var(--red-bg);    color: var(--red);   display: block; }
 
 /* ===========================
-   RESPONSIVE
+   SIDEBAR OVERLAY (mobile)
+   =========================== */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  z-index: 99;
+}
+.sidebar-overlay.open { display: block; }
+
+/* ===========================
+   RESPONSIVE — tablet
    =========================== */
 @media (max-width: 900px) {
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
   .section-row { flex-direction: column; }
+  .section-row .flex-1,
+  .section-row .flex-2 { width: 100%; }
 }
 
+/* ===========================
+   RESPONSIVE — mobile
+   =========================== */
 @media (max-width: 680px) {
+
+  /* Sidebar gizlə, toggle göstər */
   .sidebar {
     transform: translateX(-100%);
+    z-index: 200;
   }
   .sidebar.open { transform: translateX(0); }
-
   .main-wrap { margin-left: 0; }
-
   .sidebar-toggle { display: flex; }
 
-  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  /* Topbar */
+  .topbar { padding: 0 14px; gap: 10px; }
+  .topbar-title { font-size: 15px; }
 
-  .page-content { padding: 16px; }
+  /* Topbar-daki "Yeni Sifariş" düyməsinin mətni gizlənsin, sadəcə ikon qalsın */
+  .topbar-actions .btn span,
+  .topbar-actions .btn-text { display: none; }
+  .topbar-actions .btn { padding: 7px 10px; }
 
-  .topbar { padding: 0 16px; }
+  /* Page content */
+  .page-content { padding: 12px; }
 
-  .data-table { font-size: 12px; }
-  .data-table thead th, .data-table tbody td { padding: 8px; }
+  /* Stat grid */
+  .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-grid.small { max-width: 100%; }
+  .stat-card { padding: 12px; gap: 10px; }
+  .stat-value { font-size: 18px; }
+  .stat-icon { width: 34px; height: 34px; font-size: 17px; }
+
+  /* Section row — hər kart tam genişlik */
+  .section-row { flex-direction: column; gap: 12px; }
+  .section-row .flex-1,
+  .section-row .flex-2 { width: 100%; flex: unset; }
+
+  /* Reports səhifəsi kartları */
+  .section-row.gap-16 { flex-direction: column; gap: 12px; }
+
+  /* Toolbar */
+  .page-toolbar { gap: 8px; }
+  .page-toolbar .btn { flex-shrink: 0; }
+  .search-wrap { min-width: 0; width: 100%; flex: 1 1 100%; order: -1; }
+  .filter-wrap { width: 100%; }
+  .filter-wrap select { flex: 1; min-width: 0; }
+
+  /* Cədvəllər — scroll wrapper lazımdır (HTML tərəfdən) */
+  .data-table { font-size: 12px; min-width: 520px; }
+  .data-table thead th,
+  .data-table tbody td { padding: 8px 10px; }
+
+  /* Modal — tam ekran altdan açılır (mobile-friendly) */
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .modal, .modal.modal-lg {
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .modal-header { padding: 14px 16px; }
+  .modal-body { padding: 14px 16px; }
+  .modal-footer { padding: 12px 16px; }
+
+  /* Modal içindəki form-row-lar altdan aşağı düşsün */
+  .modal-body .form-row { flex-direction: column; gap: 0; }
+  .modal-body .form-row .form-group { margin-bottom: 12px; }
+
+  /* Order item row mobilə uyğun */
+  .order-item-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .order-item-row .form-group.flex-2,
+  .order-item-row .form-group.flex-1 {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 120px;
+  }
+  .btn-remove-item { margin-top: 0; align-self: center; }
+
+  /* Toast — altda mərkəzdə */
+  .toast {
+    bottom: 16px;
+    right: 12px;
+    left: 12px;
+    text-align: center;
+  }
+
+  /* Settings kartı */
+  .card[style*="max-width"] { max-width: 100% !important; }
+  .card .form-group { padding: 0 16px; margin-bottom: 12px; }
+  .card .btn { margin: 0 16px 16px; }
+
+  /* Export options */
+  .export-options { flex-direction: column; align-items: stretch; }
+  .export-options select,
+  .export-options .btn { width: 100%; justify-content: center; }
 }
