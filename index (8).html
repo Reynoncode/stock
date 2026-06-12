@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YağSat — İdarəetmə Sistemi</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/icons-react/dist/index.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-icon"><i class="ti ti-droplet-filled"></i></span>
+      <span class="logo-text">YağSat</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-page="dashboard">
+        <i class="ti ti-layout-dashboard"></i>
+        <span>İcmal</span>
+      </a>
+      <a href="#" class="nav-item" data-page="customers">
+        <i class="ti ti-users"></i>
+        <span>Müştərilər</span>
+      </a>
+      <a href="#" class="nav-item" data-page="orders">
+        <i class="ti ti-clipboard-list"></i>
+        <span>Sifarişlər</span>
+      </a>
+      <a href="#" class="nav-item" data-page="stock">
+        <i class="ti ti-box"></i>
+        <span>Stok</span>
+      </a>
+      <a href="#" class="nav-item" data-page="debts">
+        <i class="ti ti-wallet"></i>
+        <span>Borclar</span>
+      </a>
+      <a href="#" class="nav-item" data-page="smart-list">
+        <i class="ti ti-bell-ringing"></i>
+        <span>Ağıllı Siyahı</span>
+      </a>
+      <a href="#" class="nav-item" data-page="reports">
+        <i class="ti ti-file-export"></i>
+        <span>Hesabat / Export</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="#" class="nav-item" data-page="settings">
+        <i class="ti ti-settings"></i>
+        <span>Parametrlər</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-wrap">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="ti ti-menu-2"></i>
+      </button>
+      <div class="topbar-title" id="topbarTitle">İcmal</div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" id="quickAddBtn">
+          <i class="ti ti-plus"></i> Yeni Sifariş
+        </button>
+      </div>
+    </header>
+
+    <!-- PAGE CONTENT -->
+    <main class="page-content">
+
+      <!-- ===== DASHBOARD ===== -->
+      <section class="page active" id="page-dashboard">
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue"><i class="ti ti-users"></i></div>
+            <div class="stat-body">
+              <div class="stat-value" id="stat-customers">—</div>
+              <div class="stat-label">Müştəri</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon yellow"><i class="ti ti-clipboard-list"></i></div>
+            <div class="stat-body">
+              <div class="stat-value" id="stat-orders">—</div>
+              <div class="stat-label">Aktiv Sifariş</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red"><i class="ti ti-wallet"></i></div>
+            <div class="stat-body">
+              <div class="stat-value" id="stat-debt">—</div>
+              <div class="stat-label">Ümumi Borc (₼)</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><i class="ti ti-box"></i></div>
+            <div class="stat-body">
+              <div class="stat-value" id="stat-stock">—</div>
+              <div class="stat-label">Stokda məhsul</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-row">
+
+          <div class="card flex-2">
+            <div class="card-header">
+              <span class="card-title">Son Sifarişlər</span>
+              <a href="#" class="card-link" data-page="orders">Hamısı →</a>
+            </div>
+            <table class="data-table" id="dash-orders-table">
+              <thead>
+                <tr>
+                  <th>Müştəri</th>
+                  <th>Məhsul</th>
+                  <th>Tarix</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="empty-row"><td colspan="4">Hələ sifariş yoxdur</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card flex-1">
+            <div class="card-header">
+              <span class="card-title">Yüksək Borclar</span>
+              <a href="#" class="card-link" data-page="debts">Hamısı →</a>
+            </div>
+            <ul class="simple-list" id="dash-debts-list">
+              <li class="empty-row">Məlumat yoxdur</li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div class="card mt-16">
+          <div class="card-header">
+            <span class="card-title"><i class="ti ti-bell-ringing"></i> Bu həftə sifariş lazım ola biləcək müştərilər</span>
+            <a href="#" class="card-link" data-page="smart-list">Detallı →</a>
+          </div>
+          <ul class="smart-preview-list" id="dash-smart-list">
+            <li class="empty-row">Hələ məlumat yoxdur</li>
+          </ul>
+        </div>
+
+      </section>
+
+      <!-- ===== MÜŞTƏRİLƏR ===== -->
+      <section class="page" id="page-customers">
+        <div class="page-toolbar">
+          <div class="search-wrap">
+            <i class="ti ti-search"></i>
+            <input type="text" id="customerSearch" placeholder="Ad, soyad, rayon, telefon axtar..." />
+          </div>
+          <div class="filter-wrap">
+            <select id="customerRegionFilter">
+              <option value="">Bütün rayonlar</option>
+            </select>
+            <select id="customerSortBy">
+              <option value="name">Ada görə</option>
+              <option value="region">Rayona görə</option>
+              <option value="debt">Borca görə</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="addCustomerBtn">
+            <i class="ti ti-plus"></i> Müştəri əlavə et
+          </button>
+        </div>
+
+        <div class="card">
+          <table class="data-table" id="customers-table">
+            <thead>
+              <tr>
+                <th>Ad Soyad</th>
+                <th>Telefon</th>
+                <th>Rayon</th>
+                <th>Obyekt</th>
+                <th>Borc (₼)</th>
+                <th>Son Sifariş</th>
+                <th>Əməliyyat</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="empty-row"><td colspan="7">Hələ müştəri yoxdur</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== SİFARİŞLƏR ===== -->
+      <section class="page" id="page-orders">
+        <div class="page-toolbar">
+          <div class="search-wrap">
+            <i class="ti ti-search"></i>
+            <input type="text" id="orderSearch" placeholder="Müştəri adı, məhsul axtar..." />
+          </div>
+          <div class="filter-wrap">
+            <select id="orderStatusFilter">
+              <option value="">Bütün statuslar</option>
+              <option value="pending">Alındı</option>
+              <option value="delivered">Çatdırıldı</option>
+              <option value="debt">Borcludur</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="addOrderBtn">
+            <i class="ti ti-plus"></i> Yeni sifariş
+          </button>
+        </div>
+
+        <div class="card">
+          <table class="data-table" id="orders-table">
+            <thead>
+              <tr>
+                <th>Müştəri</th>
+                <th>Məhsul</th>
+                <th>Miqdar</th>
+                <th>Məbləğ (₼)</th>
+                <th>Tarix</th>
+                <th>Status</th>
+                <th>Əməliyyat</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="empty-row"><td colspan="7">Hələ sifariş yoxdur</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== STOK ===== -->
+      <section class="page" id="page-stock">
+        <div class="page-toolbar">
+          <div class="search-wrap">
+            <i class="ti ti-search"></i>
+            <input type="text" id="stockSearch" placeholder="Məhsul adı, marka axtar..." />
+          </div>
+          <button class="btn btn-primary" id="addStockBtn">
+            <i class="ti ti-plus"></i> Məhsul əlavə et
+          </button>
+        </div>
+
+        <div class="card">
+          <table class="data-table" id="stock-table">
+            <thead>
+              <tr>
+                <th>Marka</th>
+                <th>Növ / Viskozite</th>
+                <th>Həcm (L)</th>
+                <th>Qiymət (₼)</th>
+                <th>Stokda (ədəd)</th>
+                <th>Əməliyyat</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="empty-row"><td colspan="6">Hələ məhsul yoxdur</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== BORCLAR ===== -->
+      <section class="page" id="page-debts">
+        <div class="page-toolbar">
+          <div class="search-wrap">
+            <i class="ti ti-search"></i>
+            <input type="text" id="debtSearch" placeholder="Müştəri axtar..." />
+          </div>
+          <div class="filter-wrap">
+            <select id="debtRegionFilter">
+              <option value="">Bütün rayonlar</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="stat-grid small">
+          <div class="stat-card">
+            <div class="stat-icon red"><i class="ti ti-trending-up"></i></div>
+            <div class="stat-body">
+              <div class="stat-value" id="total-debt-val">—</div>
+              <div class="stat-label">Ümumi Borc (₼)</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><i class="ti ti-trending-down"></i></div>
+            <div class="stat-body">
+              <div class="stat-value" id="total-deposit-val">—</div>
+              <div class="stat-label">Ümumi Depozit (₼)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mt-16">
+          <table class="data-table" id="debts-table">
+            <thead>
+              <tr>
+                <th>Müştəri</th>
+                <th>Rayon</th>
+                <th>Borc (₼)</th>
+                <th>Depozit (₼)</th>
+                <th>Balans (₼)</th>
+                <th>Əməliyyat</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="empty-row"><td colspan="6">Məlumat yoxdur</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== AĞILLI SİYAHI ===== -->
+      <section class="page" id="page-smart-list">
+        <div class="page-toolbar">
+          <div class="filter-wrap">
+            <select id="smartRegionFilter">
+              <option value="">Bütün rayonlar</option>
+            </select>
+            <select id="smartSpeedFilter">
+              <option value="">Bütün sürətlər</option>
+              <option value="fast">Sürətli dövriyyə</option>
+              <option value="medium">Orta dövriyyə</option>
+              <option value="slow">Yavaş dövriyyə</option>
+            </select>
+          </div>
+          <button class="btn btn-outline" id="exportSmartListBtn">
+            <i class="ti ti-file-export"></i> Export
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Sifariş Lazım Ola Biləcək Müştərilər</span>
+            <span class="badge badge-yellow" id="smart-count">0 müştəri</span>
+          </div>
+          <table class="data-table" id="smart-table">
+            <thead>
+              <tr>
+                <th>Müştəri</th>
+                <th>Rayon</th>
+                <th>Son Məhsul</th>
+                <th>Son Sifariş</th>
+                <th>Dövriyyə</th>
+                <th>Ehtimal</th>
+                <th>Əməliyyat</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="empty-row"><td colspan="7">Məlumat yoxdur</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== HESABAT / EXPORT ===== -->
+      <section class="page" id="page-reports">
+        <div class="section-row gap-16">
+
+          <div class="card flex-1">
+            <div class="card-header">
+              <span class="card-title"><i class="ti ti-file-text"></i> Müştəri Siyahısı</span>
+            </div>
+            <p class="card-desc">Bütün müştərilərin tam siyahısı. Filtrə görə çıxarış mümkündür.</p>
+            <div class="export-options">
+              <select id="exportRegionFilter">
+                <option value="">Bütün rayonlar</option>
+              </select>
+              <button class="btn btn-outline" id="exportCustomersDocx">
+                <i class="ti ti-file-word"></i> DOCX (A4 çap)
+              </button>
+              <button class="btn btn-outline" id="exportCustomersExcel">
+                <i class="ti ti-table"></i> Excel
+              </button>
+            </div>
+          </div>
+
+          <div class="card flex-1">
+            <div class="card-header">
+              <span class="card-title"><i class="ti ti-wallet"></i> Borc Hesabatı</span>
+            </div>
+            <p class="card-desc">Borclu müştərilərin siyahısı və ümumi balans.</p>
+            <div class="export-options">
+              <button class="btn btn-outline" id="exportDebtsDocx">
+                <i class="ti ti-file-word"></i> DOCX (A4 çap)
+              </button>
+              <button class="btn btn-outline" id="exportDebtsExcel">
+                <i class="ti ti-table"></i> Excel
+              </button>
+            </div>
+          </div>
+
+          <div class="card flex-1">
+            <div class="card-header">
+              <span class="card-title"><i class="ti ti-clipboard-list"></i> Sifariş Hesabatı</span>
+            </div>
+            <p class="card-desc">Tarix aralığı üzrə sifariş statistikası.</p>
+            <div class="export-options">
+              <input type="date" id="reportDateFrom" />
+              <input type="date" id="reportDateTo" />
+              <button class="btn btn-outline" id="exportOrdersExcel">
+                <i class="ti ti-table"></i> Excel
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===== PARAMETRLƏr ===== -->
+      <section class="page" id="page-settings">
+        <div class="card" style="max-width:480px">
+          <div class="card-header">
+            <span class="card-title">Firebase Konfiqurasiyası</span>
+          </div>
+          <p class="card-desc">Firebase layihənizin məlumatlarını daxil edin.</p>
+          <div class="form-group">
+            <label>API Key</label>
+            <input type="text" id="cfg-apiKey" placeholder="AIza..." />
+          </div>
+          <div class="form-group">
+            <label>Auth Domain</label>
+            <input type="text" id="cfg-authDomain" placeholder="xxx.firebaseapp.com" />
+          </div>
+          <div class="form-group">
+            <label>Project ID</label>
+            <input type="text" id="cfg-projectId" placeholder="project-id" />
+          </div>
+          <button class="btn btn-primary" id="saveConfigBtn">
+            <i class="ti ti-device-floppy"></i> Yadda saxla
+          </button>
+          <div id="firebase-status" class="status-msg"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ===== MODALS ===== -->
+
+  <!-- Müştəri modal -->
+  <div class="modal-overlay" id="customerModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span id="customerModalTitle">Yeni Müştəri</span>
+        <button class="modal-close" data-modal="customerModal"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Ad <span class="req">*</span></label>
+            <input type="text" id="c-name" placeholder="Ad" />
+          </div>
+          <div class="form-group">
+            <label>Soyad</label>
+            <input type="text" id="c-surname" placeholder="Soyad" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Telefon</label>
+            <input type="tel" id="c-phone" placeholder="+994 50 000 00 00" />
+          </div>
+          <div class="form-group">
+            <label>Rayon <span class="req">*</span></label>
+            <input type="text" id="c-region" placeholder="Məs: Sumqayıt" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Obyekt adı</label>
+          <input type="text" id="c-business" placeholder="Obyekt / şirkət adı" />
+        </div>
+        <div class="form-group">
+          <label>Qeyd</label>
+          <textarea id="c-note" placeholder="Əlavə qeyd..." rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" data-modal="customerModal">Ləğv et</button>
+        <button class="btn btn-primary" id="saveCustomerBtn">Yadda saxla</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stok modal -->
+  <div class="modal-overlay" id="stockModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span id="stockModalTitle">Yeni Məhsul</span>
+        <button class="modal-close" data-modal="stockModal"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Marka <span class="req">*</span></label>
+            <input type="text" id="s-brand" placeholder="Məs: Castrol" />
+          </div>
+          <div class="form-group">
+            <label>Növ / Viskozite</label>
+            <input type="text" id="s-type" placeholder="Məs: 10W-40" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Həcm (Litr) <span class="req">*</span></label>
+            <input type="number" id="s-volume" placeholder="Məs: 4" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Qiymət (₼) <span class="req">*</span></label>
+            <input type="number" id="s-price" placeholder="0.00" min="0" step="0.01" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Stok (ədəd)</label>
+          <input type="number" id="s-qty" placeholder="0" min="0" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" data-modal="stockModal">Ləğv et</button>
+        <button class="btn btn-primary" id="saveStockBtn">Yadda saxla</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sifariş modal -->
+  <div class="modal-overlay" id="orderModal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <span id="orderModalTitle">Yeni Sifariş</span>
+        <button class="modal-close" data-modal="orderModal"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label>Müştəri <span class="req">*</span></label>
+            <select id="o-customer">
+              <option value="">Müştəri seç...</option>
+            </select>
+          </div>
+          <div class="form-group flex-1">
+            <label>Tarix <span class="req">*</span></label>
+            <input type="date" id="o-date" />
+          </div>
+        </div>
+
+        <div class="order-items" id="orderItems">
+          <div class="order-item-row" data-index="0">
+            <div class="form-group flex-2">
+              <label>Məhsul</label>
+              <select class="o-product" data-index="0">
+                <option value="">Məhsul seç...</option>
+              </select>
+            </div>
+            <div class="form-group flex-1">
+              <label>Miqdar</label>
+              <input type="number" class="o-qty" data-index="0" placeholder="0" min="1" value="1" />
+            </div>
+            <div class="form-group flex-1">
+              <label>Qiymət (₼)</label>
+              <input type="text" class="o-line-price" data-index="0" placeholder="0.00" readonly />
+            </div>
+            <button class="btn-remove-item" data-index="0"><i class="ti ti-trash"></i></button>
+          </div>
+        </div>
+
+        <button class="btn btn-ghost btn-sm" id="addOrderItemBtn">
+          <i class="ti ti-plus"></i> Məhsul əlavə et
+        </button>
+
+        <div class="order-total-row">
+          <span>Cəmi:</span>
+          <strong id="o-total">0.00 ₼</strong>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>Status</label>
+            <select id="o-status">
+              <option value="pending">Alındı</option>
+              <option value="delivered">Çatdırıldı</option>
+              <option value="debt">Borcludur</option>
+            </select>
+          </div>
+          <div class="form-group flex-1">
+            <label>Dövriyyə sürəti</label>
+            <select id="o-speed">
+              <option value="medium">Orta</option>
+              <option value="fast">Sürətli</option>
+              <option value="slow">Yavaş</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Qeyd</label>
+          <textarea id="o-note" placeholder="Əlavə qeyd..." rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" data-modal="orderModal">Ləğv et</button>
+        <button class="btn btn-primary" id="saveOrderBtn">Sifarişi yadda saxla</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ödəniş / Depozit modal -->
+  <div class="modal-overlay" id="paymentModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span id="paymentModalTitle">Ödəniş / Depozit</span>
+        <button class="modal-close" data-modal="paymentModal"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Müştəri</label>
+          <input type="text" id="pay-customer-name" readonly />
+        </div>
+        <div class="form-group">
+          <label>Cari Borc (₼)</label>
+          <input type="text" id="pay-current-debt" readonly />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Ödəniş növü</label>
+            <select id="pay-type">
+              <option value="payment">Ödəniş (borc azaldır)</option>
+              <option value="deposit">Depozit (əvvəlcədən)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Məbləğ (₼) <span class="req">*</span></label>
+            <input type="number" id="pay-amount" placeholder="0.00" min="0" step="0.01" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Qeyd</label>
+          <textarea id="pay-note" rows="2" placeholder="Əlavə qeyd..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" data-modal="paymentModal">Ləğv et</button>
+        <button class="btn btn-primary" id="savePaymentBtn">Yadda saxla</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
