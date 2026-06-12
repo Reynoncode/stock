@@ -9,6 +9,27 @@
 </head>
 <body>
 
+  <!-- ===== LOGIN EKRANI ===== -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-logo">
+        <span class="logo-icon"><i class="ti ti-droplet-filled"></i></span>
+        <span class="logo-text">YağSat</span>
+      </div>
+      <p class="login-subtitle">İdarəetmə sisteminə daxil olmaq üçün Google hesabınızla giriş edin.</p>
+      <button class="btn-google" id="loginBtn">
+        <svg width="20" height="20" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#EA4335" d="M24 9.5c3.1 0 5.9 1.1 8.1 2.9l6-6C34.5 3.2 29.5 1 24 1 14.8 1 7 6.7 3.7 14.6l7 5.4C12.4 13.8 17.7 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.4 5.7c4.3-4 6.2-9.8 6.2-16.9z"/>
+          <path fill="#FBBC05" d="M10.7 28.6A14.7 14.7 0 0 1 9.5 24c0-1.6.3-3.2.8-4.6l-7-5.4A23.9 23.9 0 0 0 0 24c0 3.8.9 7.5 2.6 10.7l8.1-6.1z"/>
+          <path fill="#34A853" d="M24 47c5.5 0 10.1-1.8 13.4-4.9l-7.4-5.7c-1.9 1.3-4.3 2-6 2-6.3 0-11.6-4.3-13.5-10.1l-8.1 6.1C7 41.3 14.8 47 24 47z"/>
+        </svg>
+        Google ilə daxil ol
+      </button>
+      <p class="login-note" id="loginError"></p>
+    </div>
+  </div>
+
   <!-- SIDEBAR OVERLAY (mobile) -->
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
@@ -59,7 +80,7 @@
   </aside>
 
   <!-- MAIN -->
-  <div class="main-wrap">
+  <div class="main-wrap" id="mainWrap">
 
     <!-- TOPBAR -->
     <header class="topbar">
@@ -79,7 +100,6 @@
 
       <!-- ===== DASHBOARD ===== -->
       <section class="page active" id="page-dashboard">
-
         <div class="stat-grid">
           <div class="stat-card">
             <div class="stat-icon blue"><i class="ti ti-users"></i></div>
@@ -112,7 +132,6 @@
         </div>
 
         <div class="section-row">
-
           <div class="card flex-2">
             <div class="card-header">
               <span class="card-title">Son Sifarişlər</span>
@@ -144,7 +163,6 @@
               <li class="empty-row">Məlumat yoxdur</li>
             </ul>
           </div>
-
         </div>
 
         <div class="card mt-16">
@@ -156,7 +174,6 @@
             <li class="empty-row">Hələ məlumat yoxdur</li>
           </ul>
         </div>
-
       </section>
 
       <!-- ===== MÜŞTƏRİLƏR ===== -->
@@ -180,7 +197,6 @@
             <i class="ti ti-plus"></i> <span>Müştəri əlavə et</span>
           </button>
         </div>
-
         <div class="card">
           <div class="table-scroll">
             <table class="data-table" id="customers-table">
@@ -222,7 +238,6 @@
             <i class="ti ti-plus"></i> <span>Yeni sifariş</span>
           </button>
         </div>
-
         <div class="card">
           <div class="table-scroll">
             <table class="data-table" id="orders-table">
@@ -256,7 +271,6 @@
             <i class="ti ti-plus"></i> <span>Məhsul əlavə et</span>
           </button>
         </div>
-
         <div class="card">
           <div class="table-scroll">
             <table class="data-table" id="stock-table">
@@ -291,7 +305,6 @@
             </select>
           </div>
         </div>
-
         <div class="stat-grid small">
           <div class="stat-card">
             <div class="stat-icon red"><i class="ti ti-trending-up"></i></div>
@@ -308,7 +321,6 @@
             </div>
           </div>
         </div>
-
         <div class="card mt-16">
           <div class="table-scroll">
             <table class="data-table" id="debts-table">
@@ -348,7 +360,6 @@
             <i class="ti ti-file-export"></i> <span>Export</span>
           </button>
         </div>
-
         <div class="card">
           <div class="card-header">
             <span class="card-title">Sifariş Lazım Ola Biləcək Müştərilər</span>
@@ -378,7 +389,6 @@
       <!-- ===== HESABAT / EXPORT ===== -->
       <section class="page" id="page-reports">
         <div class="section-row gap-16">
-
           <div class="card flex-1">
             <div class="card-header">
               <span class="card-title"><i class="ti ti-file-text"></i> Müştəri Siyahısı</span>
@@ -396,7 +406,6 @@
               </button>
             </div>
           </div>
-
           <div class="card flex-1">
             <div class="card-header">
               <span class="card-title"><i class="ti ti-wallet"></i> Borc Hesabatı</span>
@@ -411,7 +420,6 @@
               </button>
             </div>
           </div>
-
           <div class="card flex-1">
             <div class="card-header">
               <span class="card-title"><i class="ti ti-clipboard-list"></i> Sifariş Hesabatı</span>
@@ -425,13 +433,28 @@
               </button>
             </div>
           </div>
-
         </div>
       </section>
 
       <!-- ===== PARAMETRLƏr ===== -->
       <section class="page" id="page-settings">
-        <div class="card" style="max-width:480px">
+
+        <!-- Hesab məlumatları -->
+        <div class="card settings-account-card">
+          <div class="settings-account-info">
+            <img id="settings-user-avatar" src="" alt="Avatar" class="user-avatar" />
+            <div>
+              <div class="settings-user-name" id="settings-user-name">—</div>
+              <div class="settings-user-email" id="settings-user-email">—</div>
+            </div>
+          </div>
+          <button class="btn btn-logout" id="logoutBtn">
+            <i class="ti ti-logout"></i> Çıxış et
+          </button>
+        </div>
+
+        <!-- Firebase konfiqurasiyası -->
+        <div class="card mt-16" style="max-width:480px">
           <div class="card-header">
             <span class="card-title">Firebase Konfiqurasiyası</span>
           </div>
@@ -453,6 +476,7 @@
           </button>
           <div id="firebase-status" class="status-msg"></div>
         </div>
+
       </section>
 
     </main>
@@ -564,7 +588,6 @@
             <input type="date" id="o-date" />
           </div>
         </div>
-
         <div class="order-items" id="orderItems">
           <div class="order-item-row" data-index="0">
             <div class="form-group flex-2">
@@ -584,16 +607,13 @@
             <button class="btn-remove-item" data-index="0"><i class="ti ti-trash"></i></button>
           </div>
         </div>
-
         <button class="btn btn-ghost btn-sm" id="addOrderItemBtn">
           <i class="ti ti-plus"></i> Məhsul əlavə et
         </button>
-
         <div class="order-total-row">
           <span>Cəmi:</span>
           <strong id="o-total">0.00 ₼</strong>
         </div>
-
         <div class="form-row">
           <div class="form-group flex-1">
             <label>Status</label>
@@ -671,29 +691,77 @@
   <!-- ===== SCRIPTS ===== -->
   <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-  <script src="db.js"></script>
+  <script type="module">
+    import { onAuthChange, loginWithGoogle, logout, auth } from './db.js';
+
+    const loginScreen = document.getElementById('loginScreen');
+    const mainWrap    = document.getElementById('mainWrap');
+    const sidebar     = document.getElementById('sidebar');
+    const loginBtn    = document.getElementById('loginBtn');
+    const logoutBtn   = document.getElementById('logoutBtn');
+    const loginError  = document.getElementById('loginError');
+
+    // Auth vəziyyəti izlə
+    onAuthChange(user => {
+      if (user) {
+        // Giriş edilib — ana ekranı göstər
+        loginScreen.style.display = 'none';
+        mainWrap.style.display    = '';
+        sidebar.style.display     = '';
+
+        // Parametrlər səhifəsindəki istifadəçi məlumatları
+        const nameEl   = document.getElementById('settings-user-name');
+        const emailEl  = document.getElementById('settings-user-email');
+        const avatarEl = document.getElementById('settings-user-avatar');
+        if (nameEl)   nameEl.textContent  = user.displayName || 'İstifadəçi';
+        if (emailEl)  emailEl.textContent = user.email || '';
+        if (avatarEl && user.photoURL) {
+          avatarEl.src = user.photoURL;
+          avatarEl.style.display = 'block';
+        }
+      } else {
+        // Giriş edilməyib — login ekranını göstər
+        loginScreen.style.display = '';
+        mainWrap.style.display    = 'none';
+        sidebar.style.display     = 'none';
+      }
+    });
+
+    // Google ilə giriş
+    loginBtn.addEventListener('click', async () => {
+      loginError.textContent = '';
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Gözləyin...';
+      try {
+        await loginWithGoogle();
+      } catch (e) {
+        loginError.textContent = 'Giriş uğursuz oldu. Yenidən cəhd edin.';
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.1 0 5.9 1.1 8.1 2.9l6-6C34.5 3.2 29.5 1 24 1 14.8 1 7 6.7 3.7 14.6l7 5.4C12.4 13.8 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.4 5.7c4.3-4 6.2-9.8 6.2-16.9z"/><path fill="#FBBC05" d="M10.7 28.6A14.7 14.7 0 0 1 9.5 24c0-1.6.3-3.2.8-4.6l-7-5.4A23.9 23.9 0 0 0 0 24c0 3.8.9 7.5 2.6 10.7l8.1-6.1z"/><path fill="#34A853" d="M24 47c5.5 0 10.1-1.8 13.4-4.9l-7.4-5.7c-1.9 1.3-4.3 2-6 2-6.3 0-11.6-4.3-13.5-10.1l-8.1 6.1C7 41.3 14.8 47 24 47z"/></svg> Google ilə daxil ol`;
+      }
+    });
+
+    // Çıxış
+    logoutBtn.addEventListener('click', async () => {
+      await logout();
+    });
+  </script>
+
   <script src="export.js"></script>
   <script type="module" src="app.js"></script>
 
-  <!-- Sidebar overlay bağlama skripti -->
+  <!-- Sidebar toggle skripti -->
   <script>
     (function() {
-      var toggle = document.getElementById('sidebarToggle');
+      var toggle  = document.getElementById('sidebarToggle');
       var sidebar = document.getElementById('sidebar');
       var overlay = document.getElementById('sidebarOverlay');
-      function openSidebar() {
-        sidebar.classList.add('open');
-        overlay.classList.add('open');
-      }
-      function closeSidebar() {
-        sidebar.classList.remove('open');
-        overlay.classList.remove('open');
-      }
-      if (toggle) toggle.addEventListener('click', function() {
+      function openSidebar()  { sidebar.classList.add('open');    overlay.classList.add('open');    }
+      function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('open'); }
+      if (toggle)  toggle.addEventListener('click', function() {
         sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
       });
       if (overlay) overlay.addEventListener('click', closeSidebar);
-      // Nav item seçildikdə sidebar bağlansın (mobil)
       document.querySelectorAll('.nav-item').forEach(function(item) {
         item.addEventListener('click', function() {
           if (window.innerWidth <= 680) closeSidebar();
