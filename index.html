@@ -9,6 +9,9 @@
 </head>
 <body>
 
+  <!-- SIDEBAR OVERLAY (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
@@ -66,7 +69,7 @@
       <div class="topbar-title" id="topbarTitle">İcmal</div>
       <div class="topbar-actions">
         <button class="btn btn-primary" id="quickAddBtn">
-          <i class="ti ti-plus"></i> Yeni Sifariş
+          <i class="ti ti-plus"></i> <span>Yeni Sifariş</span>
         </button>
       </div>
     </header>
@@ -115,19 +118,21 @@
               <span class="card-title">Son Sifarişlər</span>
               <a href="#" class="card-link" data-page="orders">Hamısı →</a>
             </div>
-            <table class="data-table" id="dash-orders-table">
-              <thead>
-                <tr>
-                  <th>Müştəri</th>
-                  <th>Məhsul</th>
-                  <th>Tarix</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="empty-row"><td colspan="4">Hələ sifariş yoxdur</td></tr>
-              </tbody>
-            </table>
+            <div class="table-scroll">
+              <table class="data-table" id="dash-orders-table">
+                <thead>
+                  <tr>
+                    <th>Müştəri</th>
+                    <th>Məhsul</th>
+                    <th>Tarix</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="empty-row"><td colspan="4">Hələ sifariş yoxdur</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <div class="card flex-1">
@@ -172,27 +177,29 @@
             </select>
           </div>
           <button class="btn btn-primary" id="addCustomerBtn">
-            <i class="ti ti-plus"></i> Müştəri əlavə et
+            <i class="ti ti-plus"></i> <span>Müştəri əlavə et</span>
           </button>
         </div>
 
         <div class="card">
-          <table class="data-table" id="customers-table">
-            <thead>
-              <tr>
-                <th>Ad Soyad</th>
-                <th>Telefon</th>
-                <th>Rayon</th>
-                <th>Obyekt</th>
-                <th>Borc (₼)</th>
-                <th>Son Sifariş</th>
-                <th>Əməliyyat</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="empty-row"><td colspan="7">Hələ müştəri yoxdur</td></tr>
-            </tbody>
-          </table>
+          <div class="table-scroll">
+            <table class="data-table" id="customers-table">
+              <thead>
+                <tr>
+                  <th>Ad Soyad</th>
+                  <th>Telefon</th>
+                  <th>Rayon</th>
+                  <th>Obyekt</th>
+                  <th>Borc (₼)</th>
+                  <th>Son Sifariş</th>
+                  <th>Əməliyyat</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="empty-row"><td colspan="7">Hələ müştəri yoxdur</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
@@ -212,27 +219,29 @@
             </select>
           </div>
           <button class="btn btn-primary" id="addOrderBtn">
-            <i class="ti ti-plus"></i> Yeni sifariş
+            <i class="ti ti-plus"></i> <span>Yeni sifariş</span>
           </button>
         </div>
 
         <div class="card">
-          <table class="data-table" id="orders-table">
-            <thead>
-              <tr>
-                <th>Müştəri</th>
-                <th>Məhsul</th>
-                <th>Miqdar</th>
-                <th>Məbləğ (₼)</th>
-                <th>Tarix</th>
-                <th>Status</th>
-                <th>Əməliyyat</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="empty-row"><td colspan="7">Hələ sifariş yoxdur</td></tr>
-            </tbody>
-          </table>
+          <div class="table-scroll">
+            <table class="data-table" id="orders-table">
+              <thead>
+                <tr>
+                  <th>Müştəri</th>
+                  <th>Məhsul</th>
+                  <th>Miqdar</th>
+                  <th>Məbləğ (₼)</th>
+                  <th>Tarix</th>
+                  <th>Status</th>
+                  <th>Əməliyyat</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="empty-row"><td colspan="7">Hələ sifariş yoxdur</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
@@ -244,26 +253,28 @@
             <input type="text" id="stockSearch" placeholder="Məhsul adı, marka axtar..." />
           </div>
           <button class="btn btn-primary" id="addStockBtn">
-            <i class="ti ti-plus"></i> Məhsul əlavə et
+            <i class="ti ti-plus"></i> <span>Məhsul əlavə et</span>
           </button>
         </div>
 
         <div class="card">
-          <table class="data-table" id="stock-table">
-            <thead>
-              <tr>
-                <th>Marka</th>
-                <th>Növ / Viskozite</th>
-                <th>Həcm (L)</th>
-                <th>Qiymət (₼)</th>
-                <th>Stokda (ədəd)</th>
-                <th>Əməliyyat</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="empty-row"><td colspan="6">Hələ məhsul yoxdur</td></tr>
-            </tbody>
-          </table>
+          <div class="table-scroll">
+            <table class="data-table" id="stock-table">
+              <thead>
+                <tr>
+                  <th>Marka</th>
+                  <th>Növ / Viskozite</th>
+                  <th>Həcm (L)</th>
+                  <th>Qiymət (₼)</th>
+                  <th>Stokda (ədəd)</th>
+                  <th>Əməliyyat</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="empty-row"><td colspan="6">Hələ məhsul yoxdur</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
@@ -299,21 +310,23 @@
         </div>
 
         <div class="card mt-16">
-          <table class="data-table" id="debts-table">
-            <thead>
-              <tr>
-                <th>Müştəri</th>
-                <th>Rayon</th>
-                <th>Borc (₼)</th>
-                <th>Depozit (₼)</th>
-                <th>Balans (₼)</th>
-                <th>Əməliyyat</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="empty-row"><td colspan="6">Məlumat yoxdur</td></tr>
-            </tbody>
-          </table>
+          <div class="table-scroll">
+            <table class="data-table" id="debts-table">
+              <thead>
+                <tr>
+                  <th>Müştəri</th>
+                  <th>Rayon</th>
+                  <th>Borc (₼)</th>
+                  <th>Depozit (₼)</th>
+                  <th>Balans (₼)</th>
+                  <th>Əməliyyat</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="empty-row"><td colspan="6">Məlumat yoxdur</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
@@ -332,7 +345,7 @@
             </select>
           </div>
           <button class="btn btn-outline" id="exportSmartListBtn">
-            <i class="ti ti-file-export"></i> Export
+            <i class="ti ti-file-export"></i> <span>Export</span>
           </button>
         </div>
 
@@ -341,22 +354,24 @@
             <span class="card-title">Sifariş Lazım Ola Biləcək Müştərilər</span>
             <span class="badge badge-yellow" id="smart-count">0 müştəri</span>
           </div>
-          <table class="data-table" id="smart-table">
-            <thead>
-              <tr>
-                <th>Müştəri</th>
-                <th>Rayon</th>
-                <th>Son Məhsul</th>
-                <th>Son Sifariş</th>
-                <th>Dövriyyə</th>
-                <th>Ehtimal</th>
-                <th>Əməliyyat</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="empty-row"><td colspan="7">Məlumat yoxdur</td></tr>
-            </tbody>
-          </table>
+          <div class="table-scroll">
+            <table class="data-table" id="smart-table">
+              <thead>
+                <tr>
+                  <th>Müştəri</th>
+                  <th>Rayon</th>
+                  <th>Son Məhsul</th>
+                  <th>Son Sifariş</th>
+                  <th>Dövriyyə</th>
+                  <th>Ehtimal</th>
+                  <th>Əməliyyat</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="empty-row"><td colspan="7">Məlumat yoxdur</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
@@ -653,19 +668,39 @@
   <!-- Toast -->
   <div id="toast" class="toast"></div>
 
-  <!-- ===== SCRIPTS — düzgün sıra ===== -->
-  <!-- 1. CDN kitabxanalar (docx və SheetJS) -->
+  <!-- ===== SCRIPTS ===== -->
   <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-
-  <!-- 2. Verilənlər bazası -->
   <script src="db.js"></script>
-
-  <!-- 3. Export funksiyaları (window.docx və XLSX artıq hazırdır) -->
   <script src="export.js"></script>
+  <script type="module" src="app.js"></script>
 
-  <!-- 4. Əsas tətbiq məntiqi -->
-<script type="module" src="app.js"></script>
+  <!-- Sidebar overlay bağlama skripti -->
+  <script>
+    (function() {
+      var toggle = document.getElementById('sidebarToggle');
+      var sidebar = document.getElementById('sidebar');
+      var overlay = document.getElementById('sidebarOverlay');
+      function openSidebar() {
+        sidebar.classList.add('open');
+        overlay.classList.add('open');
+      }
+      function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('open');
+      }
+      if (toggle) toggle.addEventListener('click', function() {
+        sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+      });
+      if (overlay) overlay.addEventListener('click', closeSidebar);
+      // Nav item seçildikdə sidebar bağlansın (mobil)
+      document.querySelectorAll('.nav-item').forEach(function(item) {
+        item.addEventListener('click', function() {
+          if (window.innerWidth <= 680) closeSidebar();
+        });
+      });
+    })();
+  </script>
 
 </body>
 </html>
