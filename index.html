@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>YağSat — İdarəetmə Sistemi</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/icons-react/dist/index.umd.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
 </head>
 <body>
@@ -653,7 +652,20 @@
 
   <!-- Toast -->
   <div id="toast" class="toast"></div>
-  <script type="module" src="export.js"></script>
-  <script type="module" src="app.js"></script>
+
+  <!-- ===== SCRIPTS — düzgün sıra ===== -->
+  <!-- 1. CDN kitabxanalar (docx və SheetJS) -->
+  <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+  <!-- 2. Verilənlər bazası -->
+  <script src="db.js"></script>
+
+  <!-- 3. Export funksiyaları (window.docx və XLSX artıq hazırdır) -->
+  <script src="export.js"></script>
+
+  <!-- 4. Əsas tətbiq məntiqi -->
+  <script src="app.js"></script>
+
 </body>
 </html>
