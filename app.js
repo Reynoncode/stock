@@ -838,4 +838,4 @@ async function init() {
   navigateTo("dashboard");
 }
 
-init();
+// init();
