@@ -24,14 +24,14 @@ window._paymentCustomerId = null;
 //  NAVIGATION
 // ============================================================
 const pageTitles = {
-  dashboard:  "İcmal",
-  customers:  "Müştərilər",
-  orders:     "Sifarişlər",
-  stock:      "Stok",
-  debts:      "Borclar",
+  dashboard:    "İcmal",
+  customers:    "Müştərilər",
+  orders:       "Sifarişlər",
+  stock:        "Stok",
+  debts:        "Borclar",
   "smart-list": "Ağıllı Siyahı",
-  reports:    "Hesabat / Export",
-  settings:   "Parametrlər"
+  reports:      "Hesabat / Export",
+  settings:     "Parametrlər"
 };
 
 function navigateTo(page) {
@@ -44,7 +44,6 @@ function navigateTo(page) {
   document.querySelectorAll(`[data-page="${page}"]`).forEach(el => el.classList.add("active"));
   document.getElementById("topbarTitle").textContent = pageTitles[page] || page;
 
-  // Hər səhifə yükləndikdə məlumatları refresh et
   if (page === "dashboard")    loadDashboard();
   if (page === "customers")    loadCustomers();
   if (page === "orders")       loadOrders();
@@ -58,23 +57,20 @@ document.querySelectorAll("[data-page]").forEach(el => {
   el.addEventListener("click", e => {
     e.preventDefault();
     navigateTo(el.dataset.page);
-    // Mobile sidebar bağla
     document.getElementById("sidebar").classList.remove("open");
   });
 });
 
-// Sidebar toggle (mobile)
 document.getElementById("sidebarToggle").addEventListener("click", () => {
   document.getElementById("sidebar").classList.toggle("open");
 });
 
-// Topbar "Yeni Sifariş" düyməsi
 document.getElementById("quickAddBtn").addEventListener("click", () => openOrderModal());
 
 // ============================================================
 //  TOAST
 // ============================================================
-export function showToast(msg, duration = 2800) {
+function showToast(msg, duration = 2800) {
   const t = document.getElementById("toast");
   t.textContent = msg;
   t.classList.add("show");
@@ -84,8 +80,8 @@ export function showToast(msg, duration = 2800) {
 // ============================================================
 //  MODAL helpers
 // ============================================================
-export function openModal(id)  { document.getElementById(id).classList.add("open"); }
-export function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+function openModal(id)  { document.getElementById(id).classList.add("open"); }
+function closeModal(id) { document.getElementById(id).classList.remove("open"); }
 
 document.querySelectorAll(".modal-close, [data-modal]").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -94,7 +90,6 @@ document.querySelectorAll(".modal-close, [data-modal]").forEach(btn => {
   });
 });
 
-// Overlay-ə klikdə bağla
 document.querySelectorAll(".modal-overlay").forEach(overlay => {
   overlay.addEventListener("click", e => {
     if (e.target === overlay) overlay.classList.remove("open");
@@ -167,13 +162,13 @@ async function loadDashboard() {
 async function loadCustomers() {
   window._customers = await getCustomers();
   renderCustomers();
-  populateRegionFilter();
+  populateRegionFilters();
 }
 
 function renderCustomers() {
-  const search  = (document.getElementById("customerSearch")?.value || "").toLowerCase();
-  const region  = document.getElementById("customerRegionFilter")?.value || "";
-  const sortBy  = document.getElementById("customerSortBy")?.value || "name";
+  const search = (document.getElementById("customerSearch")?.value || "").toLowerCase();
+  const region = document.getElementById("customerRegionFilter")?.value || "";
+  const sortBy = document.getElementById("customerSortBy")?.value || "name";
 
   let list = [...window._customers];
 
@@ -183,7 +178,7 @@ function renderCustomers() {
   if (region) list = list.filter(c => c.region === region);
 
   list.sort((a, b) => {
-    if (sortBy === "name")   return (`${a.name} ${a.surname}`).localeCompare(`${b.name} ${b.surname}`);
+    if (sortBy === "name")   return (`${a.name} ${a.surname||""}`).localeCompare(`${b.name} ${b.surname||""}`);
     if (sortBy === "region") return (a.region || "").localeCompare(b.region || "");
     if (sortBy === "debt")   return (b.debt || 0) - (a.debt || 0);
     return 0;
@@ -218,20 +213,24 @@ function renderCustomers() {
   `).join("");
 }
 
-function populateRegionFilter() {
-  const sel    = document.getElementById("customerRegionFilter");
-  const cur    = sel.value;
+function populateRegionFilters() {
   const regions = [...new Set(window._customers.map(c => c.region).filter(Boolean))].sort();
-  sel.innerHTML = `<option value="">Bütün rayonlar</option>` +
-    regions.map(r => `<option value="${r}" ${r === cur ? "selected" : ""}>${r}</option>`).join("");
+  const opts = `<option value="">Bütün rayonlar</option>` +
+    regions.map(r => `<option value="${r}">${r}</option>`).join("");
+
+  ["customerRegionFilter", "debtRegionFilter", "smartRegionFilter", "exportRegionFilter"].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const cur = el.value;
+    el.innerHTML = opts;
+    if (cur) el.value = cur;
+  });
 }
 
-// Search / filter / sort listeners
 document.getElementById("customerSearch")?.addEventListener("input", renderCustomers);
 document.getElementById("customerRegionFilter")?.addEventListener("change", renderCustomers);
 document.getElementById("customerSortBy")?.addEventListener("change", renderCustomers);
 
-// Müştəri əlavə et düyməsi
 document.getElementById("addCustomerBtn")?.addEventListener("click", () => {
   window._editingCustomerId = null;
   document.getElementById("customerModalTitle").textContent = "Yeni Müştəri";
@@ -241,7 +240,6 @@ document.getElementById("addCustomerBtn")?.addEventListener("click", () => {
   openModal("customerModal");
 });
 
-// Müştəri saxla
 document.getElementById("saveCustomerBtn")?.addEventListener("click", async () => {
   const name = document.getElementById("c-name").value.trim();
   if (!name) { showToast("Ad daxil edin"); return; }
@@ -270,7 +268,6 @@ document.getElementById("saveCustomerBtn")?.addEventListener("click", async () =
   }
 });
 
-// Global funksiyalar (onclick üçün)
 window.editCustomer = (id) => {
   const c = window._customers.find(x => x.id === id);
   if (!c) return;
@@ -296,14 +293,13 @@ window.openPayment = (id) => {
   const c = window._customers.find(x => x.id === id);
   if (!c) return;
   window._paymentCustomerId = id;
-  document.getElementById("pay-customer-name").value  = `${c.name} ${c.surname || ""}`;
-  document.getElementById("pay-current-debt").value   = (c.debt || 0).toFixed(2) + " ₼";
-  document.getElementById("pay-amount").value         = "";
-  document.getElementById("pay-note").value           = "";
+  document.getElementById("pay-customer-name").value = `${c.name} ${c.surname || ""}`;
+  document.getElementById("pay-current-debt").value  = (c.debt || 0).toFixed(2) + " ₼";
+  document.getElementById("pay-amount").value        = "";
+  document.getElementById("pay-note").value          = "";
   openModal("paymentModal");
 };
 
-// Ödəniş saxla
 document.getElementById("savePaymentBtn")?.addEventListener("click", async () => {
   const amount = parseFloat(document.getElementById("pay-amount").value);
   if (!amount || amount <= 0) { showToast("Məbləğ daxil edin"); return; }
@@ -321,6 +317,7 @@ document.getElementById("savePaymentBtn")?.addEventListener("click", async () =>
     showToast("Ödəniş qeyd edildi ✓");
     closeModal("paymentModal");
     loadCustomers();
+    loadDebts();
   } catch(e) {
     showToast("Xəta: " + e.message);
   }
@@ -335,15 +332,21 @@ async function loadStock() {
 }
 
 function renderStock() {
+  const search = (document.getElementById("stockSearch")?.value || "").toLowerCase();
+  let list = [...window._products];
+  if (search) list = list.filter(p =>
+    (`${p.brand} ${p.type}`).toLowerCase().includes(search)
+  );
+
   const tbody = document.querySelector("#stock-table tbody");
   if (!tbody) return;
 
-  if (window._products.length === 0) {
+  if (list.length === 0) {
     tbody.innerHTML = `<tr class="empty-row"><td colspan="6">Məhsul yoxdur</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = window._products.map(p => `
+  tbody.innerHTML = list.map(p => `
     <tr>
       <td><strong>${p.brand}</strong></td>
       <td>${p.type || "—"}</td>
@@ -361,6 +364,8 @@ function renderStock() {
     </tr>
   `).join("");
 }
+
+document.getElementById("stockSearch")?.addEventListener("input", renderStock);
 
 document.getElementById("addStockBtn")?.addEventListener("click", () => {
   window._editingProductId = null;
@@ -440,19 +445,18 @@ function renderOrders() {
   if (!tbody) return;
 
   if (list.length === 0) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">Sifariş tapılmadı</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="7">Sifariş tapılmadı</td></tr>`;
     return;
   }
 
   tbody.innerHTML = list.map(o => `
     <tr>
-      <td>${o.customerName || "—"}</td>
+      <td><strong>${o.customerName || "—"}</strong></td>
       <td>${o.itemsSummary || "—"}</td>
-      <td>${o.date || "—"}</td>
+      <td>${o.totalQty ? o.totalQty + " L" : "—"}</td>
       <td>${(o.total || 0).toFixed(2)} ₼</td>
-      <td>
-        <span class="badge ${statusBadge(o.status)}">${statusLabel(o.status)}</span>
-      </td>
+      <td>${o.date || "—"}</td>
+      <td><span class="badge ${statusBadge(o.status)}">${statusLabel(o.status)}</span></td>
       <td>
         <select class="status-change-sel" onchange="changeOrderStatus('${o.id}', this.value)" style="font-size:12px;padding:4px 6px">
           <option value="">Status dəyiş...</option>
@@ -493,19 +497,16 @@ function openOrderModal() {
   window._editingOrderId = null;
   document.getElementById("orderModalTitle").textContent = "Yeni Sifariş";
 
-  // Müştəri select doldur
   const sel = document.getElementById("o-customer");
   sel.innerHTML = `<option value="">Müştəri seç...</option>` +
-    window._customers.map(c => `<option value="${c.id}">${c.name} ${c.surname || ""} — ${c.region || ""}</option>`).join("");
+    window._customers.map(c =>
+      `<option value="${c.id}">${c.name} ${c.surname || ""} — ${c.region || ""}</option>`
+    ).join("");
 
-  // Tarix bugün
   document.getElementById("o-date").value = new Date().toISOString().split("T")[0];
-
-  // İtem sıfırla
   document.getElementById("orderItems").innerHTML = "";
   addOrderItemRow();
   updateOrderTotal();
-
   document.getElementById("o-status").value = "pending";
   document.getElementById("o-speed").value  = "medium";
   document.getElementById("o-note").value   = "";
@@ -515,14 +516,14 @@ function openOrderModal() {
 
 function addOrderItemRow() {
   const container = document.getElementById("orderItems");
-  const idx       = container.children.length;
+  const idx = container.children.length;
 
   const productOptions = window._products.map(p =>
-    `<option value="${p.id}" data-price="${p.price}">${p.brand} ${p.type || ""} ${p.volume}L — ${p.price} ₼</option>`
+    `<option value="${p.id}" data-price="${p.price}" data-volume="${p.volume}">${p.brand} ${p.type || ""} ${p.volume}L — ${p.price} ₼</option>`
   ).join("");
 
   const row = document.createElement("div");
-  row.className   = "order-item-row";
+  row.className = "order-item-row";
   row.dataset.index = idx;
   row.innerHTML = `
     <div class="form-group flex-2">
@@ -533,7 +534,7 @@ function addOrderItemRow() {
       </select>
     </div>
     <div class="form-group flex-1">
-      <label>Miqdar</label>
+      <label>Miqdar (ədəd)</label>
       <input type="number" class="o-qty" data-index="${idx}" placeholder="0" min="1" value="1" />
     </div>
     <div class="form-group flex-1">
@@ -545,7 +546,6 @@ function addOrderItemRow() {
     </button>
   `;
 
-  // Məhsul seçildikdə qiyməti avtomatik hesabla
   row.querySelector(".o-product").addEventListener("change", function() {
     const opt   = this.options[this.selectedIndex];
     const price = parseFloat(opt.dataset.price) || 0;
@@ -581,8 +581,8 @@ document.getElementById("saveOrderBtn")?.addEventListener("click", async () => {
   if (!customerId) { showToast("Müştəri seçin"); return; }
   if (!date)       { showToast("Tarix daxil edin"); return; }
 
-  // Məhsul sətirləri
   const items = [];
+  let totalQty = 0;
   document.querySelectorAll(".order-item-row").forEach(row => {
     const sel   = row.querySelector(".o-product");
     const pid   = sel?.value;
@@ -590,7 +590,15 @@ document.getElementById("saveOrderBtn")?.addEventListener("click", async () => {
     const price = parseFloat(row.querySelector(".o-line-price")?.value) || 0;
     if (pid && qty > 0) {
       const p = window._products.find(x => x.id === pid);
-      items.push({ productId: pid, productName: `${p?.brand} ${p?.type || ""} ${p?.volume}L`, qty, price });
+      const vol = (p?.volume || 0) * qty;
+      totalQty += vol;
+      items.push({
+        productId:   pid,
+        productName: `${p?.brand} ${p?.type || ""} ${p?.volume}L`,
+        qty,
+        volume:      vol,
+        price
+      });
     }
   });
 
@@ -607,6 +615,7 @@ document.getElementById("saveOrderBtn")?.addEventListener("click", async () => {
     items,
     itemsSummary,
     total,
+    totalQty,
     status: document.getElementById("o-status").value,
     speed:  document.getElementById("o-speed").value,
     note:   document.getElementById("o-note").value.trim()
@@ -628,62 +637,176 @@ document.getElementById("saveOrderBtn")?.addEventListener("click", async () => {
 // ============================================================
 async function loadDebts() {
   const customers = window._customers.length ? window._customers : await getCustomers();
-  const debtors   = customers.filter(c => (c.debt || 0) > 0)
-                              .sort((a, b) => b.debt - a.debt);
+  const region    = document.getElementById("debtRegionFilter")?.value || "";
+  const search    = (document.getElementById("debtSearch")?.value || "").toLowerCase();
+
+  let list = customers.filter(c => (c.debt || 0) > 0 || (c.deposit || 0) > 0);
+  if (region) list = list.filter(c => c.region === region);
+  if (search) list = list.filter(c =>
+    (`${c.name} ${c.surname}`).toLowerCase().includes(search)
+  );
+  list.sort((a, b) => (b.debt || 0) - (a.debt || 0));
+
+  // Ümumi statistika
+  const allDebt    = customers.reduce((s, c) => s + (c.debt || 0), 0);
+  const allDeposit = customers.reduce((s, c) => s + (c.deposit || 0), 0);
+  const totalDebtEl    = document.getElementById("total-debt-val");
+  const totalDepositEl = document.getElementById("total-deposit-val");
+  if (totalDebtEl)    totalDebtEl.textContent    = allDebt.toFixed(2) + " ₼";
+  if (totalDepositEl) totalDepositEl.textContent = allDeposit.toFixed(2) + " ₼";
 
   const tbody = document.querySelector("#debts-table tbody");
   if (!tbody) return;
 
-  if (debtors.length === 0) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="5">Borc yoxdur</td></tr>`;
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">Borc / depozit yoxdur</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = debtors.map(c => `
+  tbody.innerHTML = list.map(c => {
+    const debt    = c.debt || 0;
+    const deposit = c.deposit || 0;
+    const balance = deposit - debt;
+    return `
     <tr>
-      <td><strong>${c.name} ${c.surname || ""}</strong></td>
+      <td><strong>${c.name} ${c.surname || ""}</strong><br><small style="color:var(--text-muted)">${c.phone || ""}</small></td>
       <td>${c.region || "—"}</td>
-      <td>${c.phone || "—"}</td>
-      <td class="debt-amount">${(c.debt || 0).toFixed(2)} ₼</td>
+      <td class="${debt > 0 ? "debt-amount" : ""}">${debt.toFixed(2)} ₼</td>
+      <td style="color:var(--green)">${deposit.toFixed(2)} ₼</td>
+      <td class="${balance < 0 ? "debt-amount" : ""}" style="${balance >= 0 ? "color:var(--green)" : ""}">${balance.toFixed(2)} ₼</td>
       <td>
         <button class="btn btn-sm btn-outline" onclick="openPayment('${c.id}')">
           <i class="ti ti-wallet"></i> Ödəniş
         </button>
       </td>
     </tr>
-  `).join("");
+  `}).join("");
 }
+
+document.getElementById("debtSearch")?.addEventListener("input", loadDebts);
+document.getElementById("debtRegionFilter")?.addEventListener("change", loadDebts);
 
 // ============================================================
 //  AĞILLI SİYAHI
 // ============================================================
 async function loadSmartList() {
-  const list = await getSmartList();
+  const allList  = await getSmartList();
+  const regionF  = document.getElementById("smartRegionFilter")?.value || "";
+  const speedF   = document.getElementById("smartSpeedFilter")?.value || "";
+
+  let list = [...allList];
+  if (regionF) list = list.filter(c => c.region === regionF);
+  if (speedF)  list = list.filter(c => (c.lastOrderSpeed || "medium") === speedF);
+
+  const countEl = document.getElementById("smart-count");
+  if (countEl) countEl.textContent = list.length + " müştəri";
+
   const tbody = document.querySelector("#smart-table tbody");
   if (!tbody) return;
 
   if (list.length === 0) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="5">Hələ məlumat yoxdur</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="7">Hələ məlumat yoxdur</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = list.map(c => `
+  tbody.innerHTML = list.map(c => {
+    const speed    = c.lastOrderSpeed || "medium";
+    const thresh   = { fast: 7, medium: 14, slow: 21 }[speed];
+    const pct      = Math.min(100, Math.round((c.daysSinceOrder / thresh) * 100));
+    const urgency  = pct >= 100 ? "badge-red" : pct >= 80 ? "badge-yellow" : "badge-green";
+    const urgLabel = pct >= 100 ? "Təcili" : pct >= 80 ? "Yaxın" : "Normal";
+
+    return `
     <tr>
-      <td><strong>${c.name} ${c.surname || ""}</strong></td>
+      <td>
+        <strong>${c.name} ${c.surname || ""}</strong><br>
+        <small style="color:var(--text-muted)">${c.phone || ""}</small>
+      </td>
       <td>${c.region || "—"}</td>
-      <td>${c.lastOrderDate || "—"}</td>
-      <td>${c.daysSinceOrder} gün</td>
-      <td><span class="badge badge-yellow">${speedLabel(c.lastOrderSpeed)}</span></td>
+      <td>${c.lastProduct || "—"}</td>
+      <td>${c.lastOrderDate || "—"}<br><small style="color:var(--text-muted)">${c.daysSinceOrder} gün öncə</small></td>
+      <td><span class="badge badge-gray">${speedLabel(speed)}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="background:var(--border);border-radius:4px;height:6px;width:60px;overflow:hidden">
+            <div style="background:${pct>=100?"var(--red)":pct>=80?"var(--yellow)":"var(--green)"};height:100%;width:${pct}%"></div>
+          </div>
+          <span class="badge ${urgency}">${urgLabel} ${pct}%</span>
+        </div>
+      </td>
+      <td>
+        <button class="btn btn-sm btn-primary" onclick="openOrderModalForCustomer('${c.id}')">
+          <i class="ti ti-plus"></i> Sifariş
+        </button>
+        <a href="https://wa.me/${(c.phone||"").replace(/\D/g,"")}" target="_blank" class="btn btn-sm btn-outline" style="margin-left:4px">
+          <i class="ti ti-brand-whatsapp"></i>
+        </a>
+      </td>
     </tr>
-  `).join("");
+  `}).join("");
 }
+
+document.getElementById("smartRegionFilter")?.addEventListener("change", loadSmartList);
+document.getElementById("smartSpeedFilter")?.addEventListener("change", loadSmartList);
+
+document.getElementById("exportSmartListBtn")?.addEventListener("click", () => {
+  showToast("Export funksiyası tezliklə əlavə olunacaq");
+});
+
+window.openOrderModalForCustomer = (customerId) => {
+  openOrderModal();
+  setTimeout(() => {
+    const sel = document.getElementById("o-customer");
+    if (sel) sel.value = customerId;
+  }, 50);
+};
 
 // ============================================================
 //  HESABAT / EXPORT
 // ============================================================
 function loadReports() {
-  // Export düymələri ayrı export.js-də olacaq
+  populateRegionFilters();
+
+  // Export region filter müştərilər siyahısı üçün
+  const exportRegionEl = document.getElementById("exportRegionFilter");
+  if (exportRegionEl) {
+    const regions = [...new Set(window._customers.map(c => c.region).filter(Boolean))].sort();
+    exportRegionEl.innerHTML = `<option value="">Bütün rayonlar</option>` +
+      regions.map(r => `<option value="${r}">${r}</option>`).join("");
+  }
+
+  // Tarix default
+  const today = new Date().toISOString().split("T")[0];
+  const fromEl = document.getElementById("reportDateFrom");
+  const toEl   = document.getElementById("reportDateTo");
+  if (fromEl && !fromEl.value) {
+    const d = new Date(); d.setMonth(d.getMonth()-1);
+    fromEl.value = d.toISOString().split("T")[0];
+  }
+  if (toEl && !toEl.value) toEl.value = today;
 }
+
+// Export düymələri — export.js yüklənəndə işləyəcək
+document.getElementById("exportCustomersDocx")?.addEventListener("click", () => {
+  if (window.exportCustomersDocx) window.exportCustomersDocx();
+  else showToast("export.js hələ yüklənməyib");
+});
+document.getElementById("exportCustomersExcel")?.addEventListener("click", () => {
+  if (window.exportCustomersExcel) window.exportCustomersExcel();
+  else showToast("export.js hələ yüklənməyib");
+});
+document.getElementById("exportDebtsDocx")?.addEventListener("click", () => {
+  if (window.exportDebtsDocx) window.exportDebtsDocx();
+  else showToast("export.js hələ yüklənməyib");
+});
+document.getElementById("exportDebtsExcel")?.addEventListener("click", () => {
+  if (window.exportDebtsExcel) window.exportDebtsExcel();
+  else showToast("export.js hələ yüklənməyib");
+});
+document.getElementById("exportOrdersExcel")?.addEventListener("click", () => {
+  if (window.exportOrdersExcel) window.exportOrdersExcel();
+  else showToast("export.js hələ yüklənməyib");
+});
 
 // ============================================================
 //  KÖMƏKÇI FUNKSİYALAR
@@ -691,11 +814,9 @@ function loadReports() {
 function statusBadge(s) {
   return { pending: "badge-yellow", delivered: "badge-green", debt: "badge-red" }[s] || "badge-gray";
 }
-
 function statusLabel(s) {
   return { pending: "Alındı", delivered: "Çatdırıldı", debt: "Borcludur" }[s] || s;
 }
-
 function speedLabel(s) {
   return { fast: "Sürətli", medium: "Orta", slow: "Yavaş" }[s] || "Orta";
 }
@@ -704,7 +825,6 @@ function speedLabel(s) {
 //  INIT
 // ============================================================
 async function init() {
-  // Bütün data-ları əvvəlcədən yüklə
   try {
     [window._customers, window._products, window._orders] = await Promise.all([
       getCustomers(),
@@ -713,8 +833,8 @@ async function init() {
     ]);
   } catch(e) {
     console.error("İlkin yükləmə xətası:", e);
+    showToast("Firebase bağlantısı yoxlanılır...");
   }
-
   navigateTo("dashboard");
 }
 
