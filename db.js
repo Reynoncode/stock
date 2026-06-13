@@ -150,13 +150,56 @@ export async function addOrder(data) {
     createdAt: serverTimestamp()
   });
 
-  if (data.status === "debt") {
-    await updateCustomerDebt(data.customerId, data.total);
+  const customer = await getDoc(userDoc(CUSTOMERS, data.customerId));
+  if (!customer.exists()) return ref;
+  const cur = customer.data();
+
+  const total      = data.total || 0;
+  const paidAmount = data.paidAmount || 0;
+
+  if (data.status === 'debt') {
+    // Tam borc
+    await updateCustomerDebt(data.customerId, total);
+
+  } else if (data.status === 'partial') {
+    // Qismən ödənilib — fərq borc olur
+    const remaining = Math.max(0, total - paidAmount);
+    if (remaining > 0) await updateCustomerDebt(data.customerId, remaining);
+    // Ödənilən hissəni payment kimi qeyd et
+    if (paidAmount > 0) {
+      await addDoc(userCol(PAYMENTS), {
+        customerId: data.customerId,
+        orderId: ref.id,
+        type: 'payment',
+        amount: paidAmount,
+        note: data.paymentNote || 'Qismən ödəniş',
+        date: data.date,
+        createdAt: serverTimestamp()
+      });
+    }
+
+  } else if (data.status === 'deposit') {
+    // Depozitdən silinir
+    const newDeposit = Math.max(0, (cur.deposit || 0) - total);
+    await updateDoc(userDoc(CUSTOMERS, data.customerId), { deposit: newDeposit });
+
+  } else if (data.status === 'paid') {
+    // Tam ödənilib — heç bir borc əlavə olunmur
+    await addDoc(userCol(PAYMENTS), {
+      customerId: data.customerId,
+      orderId: ref.id,
+      type: 'payment',
+      amount: total,
+      note: data.paymentNote || 'Tam ödəniş',
+      date: data.date,
+      createdAt: serverTimestamp()
+    });
   }
+  // pending — ödəniş sonra olacaq, borc da qeyd olunmur hələlik
 
   await updateDoc(userDoc(CUSTOMERS, data.customerId), {
     lastOrderDate:  data.date,
-    lastOrderSpeed: data.speed || "medium"
+    lastOrderSpeed: data.speed || 'medium'
   });
 
   return ref;
@@ -171,9 +214,14 @@ export async function updateOrderStatus(orderId, newStatus) {
 
   await updateDoc(ref, { status: newStatus });
 
-  if (old !== "debt" && newStatus === "debt") {
+  // Köhnə statusdan yeni statusa keçid — borc fərqini hesabla
+  const debtStatuses = ['debt'];
+  const wasDebt = debtStatuses.includes(old);
+  const isDebt  = debtStatuses.includes(newStatus);
+
+  if (!wasDebt && isDebt) {
     await updateCustomerDebt(order.customerId, order.total);
-  } else if (old === "debt" && newStatus !== "debt") {
+  } else if (wasDebt && !isDebt) {
     await updateCustomerDebt(order.customerId, -order.total);
   }
 }
@@ -205,6 +253,7 @@ export async function getProducts() {
 export async function addProduct(data) {
   return addDoc(userCol(PRODUCTS), {
     ...data,
+    isActive: data.isActive !== undefined ? data.isActive : true,
     createdAt: serverTimestamp()
   });
 }
@@ -262,7 +311,8 @@ export async function getDashboardStats() {
 
   const totalDebt     = customers.reduce((s, c) => s + (c.debt || 0), 0);
   const activeOrders  = orders.filter(o => o.status === "pending").length;
-  const totalProducts = products.reduce((s, p) => s + (p.qty || 0), 0);
+  const totalProducts = products.filter(p => p.isActive !== false).length;
+
 
   return {
     customerCount: customers.length,
