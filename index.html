@@ -709,6 +709,15 @@
         mainWrap.style.display    = '';
         sidebar.style.display     = '';
 
+        const start = () => {
+      if (!window.__appStarted) {
+        window.__appStarted = true;
+        window.__initApp();
+      }
+    };
+    if (window.__initApp) start();
+    else document.addEventListener('app:ready', start, { once: true });
+
         // Parametrlər səhifəsindəki istifadəçi məlumatları
         const nameEl   = document.getElementById('settings-user-name');
         const emailEl  = document.getElementById('settings-user-email');
