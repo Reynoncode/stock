@@ -685,6 +685,31 @@
     </div>
   </div>
 
+
+  <!-- Müştəri profil modal -->
+<div class="modal-overlay" id="customerProfileModal">
+  <div class="modal profile-modal">
+    <div class="modal-header">
+      <span id="profileModalName">Müştəri</span>
+      <button class="modal-close" data-modal="customerProfileModal">
+        <i class="ti ti-x"></i>
+      </button>
+    </div>
+
+    <div class="profile-tabs">
+      <button class="profile-tab active" data-tab="info">
+        <i class="ti ti-user"></i> Məlumatlar
+      </button>
+      <button class="profile-tab" data-tab="history">
+        <i class="ti ti-history"></i> Sifariş tarixi
+      </button>
+    </div>
+
+    <div class="profile-tab-content active" id="profileTab-info"></div>
+    <div class="profile-tab-content" id="profileTab-history"></div>
+  </div>
+</div>
+  
   <!-- Toast -->
   <div id="toast" class="toast"></div>
 
