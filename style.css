@@ -1002,3 +1002,95 @@ select:focus, input[type="date"]:focus { border-color: var(--black); }
   .profile-info-grid { grid-template-columns: 1fr; }
   .profile-actions { flex-direction: column; }
 }
+/* ===========================
+   TOGGLE SWITCH
+   =========================== */
+.toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+.toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--gray-20);
+  border-radius: 22px;
+  cursor: pointer;
+  transition: background .2s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  left: 3px; top: 3px;
+  background: var(--white);
+  border-radius: 50%;
+  transition: transform .2s;
+}
+.toggle input:checked + .toggle-slider { background: var(--green); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+.toggle-label { font-size: 13px; font-weight: 500; color: var(--gray-70); }
+
+/* ===========================
+   PAYMENT INFO (sifariş modal)
+   =========================== */
+.payment-detail-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* ===========================
+   BORCLAR — qazanc bloku
+   =========================== */
+.earnings-block {
+  background: var(--white);
+  border: 1px solid var(--gray-10);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+.earnings-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gray-50);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: 12px;
+}
+.earnings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.earnings-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.earnings-item-label { font-size: 11px; color: var(--gray-50); }
+.earnings-item-value { font-size: 20px; font-weight: 800; }
+
+.debts-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  align-items: center;
+}
+.debts-filters select,
+.debts-filters input[type="date"] { min-width: 130px; }
+
+@media (max-width: 680px) {
+  .earnings-grid { grid-template-columns: 1fr 1fr; }
+  .debts-filters select,
+  .debts-filters input[type="date"] { flex: 1; min-width: 0; }
+}
