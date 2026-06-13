@@ -724,3 +724,150 @@ select:focus, input[type="date"]:focus { border-color: var(--black); }
   .export-options select,
   .export-options .btn { width: 100%; justify-content: center; }
 }
+/* ===========================
+   LOGIN SCREEN
+   =========================== */
+.login-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--gray-05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 20px;
+}
+
+.login-card {
+  background: var(--white);
+  border: 1px solid var(--gray-10);
+  border-radius: 12px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -.3px;
+}
+.login-logo .logo-icon { font-size: 28px; }
+
+.login-subtitle {
+  font-size: 13.5px;
+  color: var(--gray-50);
+  line-height: 1.5;
+  max-width: 280px;
+}
+
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 16px;
+  border: 1px solid var(--gray-20);
+  border-radius: var(--radius);
+  background: var(--white);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--black);
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+  font-family: inherit;
+  margin-top: 4px;
+}
+.btn-google:hover {
+  border-color: var(--gray-50);
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+.btn-google:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+.login-note {
+  font-size: 12px;
+  color: var(--red);
+  min-height: 16px;
+}
+
+/* ===========================
+   SETTINGS — hesab kartı
+   =========================== */
+.settings-account-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  max-width: 480px;
+  gap: 16px;
+}
+
+.settings-account-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: none;
+  border: 2px solid var(--gray-10);
+}
+
+.settings-user-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.settings-user-email {
+  font-size: 12px;
+  color: var(--gray-50);
+  margin-top: 2px;
+}
+
+.btn-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--gray-20);
+  background: var(--white);
+  color: var(--gray-70);
+  transition: border-color .12s, color .12s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.btn-logout:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+@media (max-width: 680px) {
+  .login-card { padding: 32px 24px; }
+  .settings-account-card {
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 100%;
+  }
+  .btn-logout { width: 100%; justify-content: center; }
+}
