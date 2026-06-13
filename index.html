@@ -176,6 +176,41 @@
         </div>
       </section>
 
+      <div class="earnings-block" id="earningsBlock">
+  <div class="earnings-title">Ümumi Maliyyə Vəziyyəti</div>
+  <div class="earnings-grid">
+    <div class="earnings-item">
+      <span class="earnings-item-label">Ümumi Satış (₼)</span>
+      <span class="earnings-item-value" id="earn-total">—</span>
+    </div>
+    <div class="earnings-item">
+      <span class="earnings-item-label">Yığılan (₼)</span>
+      <span class="earnings-item-value" style="color:var(--green)" id="earn-collected">—</span>
+    </div>
+    <div class="earnings-item">
+      <span class="earnings-item-label">Qalıq Borc (₼)</span>
+      <span class="earnings-item-value" style="color:var(--red)" id="earn-debt">—</span>
+    </div>
+  </div>
+</div>
+
+<div class="debts-filters">
+  <input type="date" id="debtDateFrom" placeholder="Başlanğıc" />
+  <input type="date" id="debtDateTo" placeholder="Son tarix" />
+  <select id="debtProductFilter">
+    <option value="">Bütün məhsullar</option>
+  </select>
+  <select id="debtRegionFilter">
+    <option value="">Bütün rayonlar</option>
+  </select>
+  <select id="debtCustomerFilter">
+    <option value="">Bütün müştərilər</option>
+  </select>
+  <button class="btn btn-ghost btn-sm" id="debtFilterReset">
+    <i class="ti ti-x"></i> Sıfırla
+  </button>
+</div>
+      
       <!-- ===== MÜŞTƏRİLƏR ===== -->
       <section class="page" id="page-customers">
         <div class="page-toolbar">
@@ -556,10 +591,16 @@
             <input type="number" id="s-price" placeholder="0.00" min="0" step="0.01" />
           </div>
         </div>
-        <div class="form-group">
-          <label>Stok (ədəd)</label>
-          <input type="number" id="s-qty" placeholder="0" min="0" />
+       <div class="form-group">
+        <label>Status</label>
+        <div class="toggle-wrap">
+          <label class="toggle">
+            <input type="checkbox" id="s-isActive" checked />
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label" id="s-isActive-label">Aktiv</span>
         </div>
+      </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" data-modal="stockModal">Ləğv et</button>
@@ -614,15 +655,28 @@
           <span>Cəmi:</span>
           <strong id="o-total">0.00 ₼</strong>
         </div>
+        <div class="form-row" id="paymentDetailRow" style="display:none">
+          <div class="form-group flex-1">
+            <label>Ödənilən məbləğ (₼)</label>
+            <input type="number" id="o-paid-amount" placeholder="0.00" min="0" step="0.01" />
+          </div>
+          <div class="form-group flex-1">
+            <label>Qeyd</label>
+            <input type="text" id="o-payment-note" placeholder="Məs: 200₼ nağd ödədi" />
+          </div>
+        </div>
         <div class="form-row">
           <div class="form-group flex-1">
             <label>Status</label>
             <select id="o-status">
-              <option value="pending">Alındı</option>
-              <option value="delivered">Çatdırıldı</option>
+              <option value="pending">Alındı (ödəniş sonra)</option>
+              <option value="paid">Ödənilib (tam)</option>
+              <option value="partial">Qismən ödənilib</option>
               <option value="debt">Borcludur</option>
+              <option value="deposit">Depozitdən silinir</option>
             </select>
           </div>
+          
           <div class="form-group flex-1">
             <label>Dövriyyə sürəti</label>
             <select id="o-speed">
