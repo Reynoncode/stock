@@ -115,7 +115,7 @@ async function loadDashboard() {
     } else {
       tbody.innerHTML = stats.recentOrders.map(o => `
         <tr>
-          <td>${o.customerName || "—"}</td>
+          <td><span class="customer-link" onclick="openCustomerProfile('${o.customerId}')">${o.customerName || "—"}</span></td>
           <td>${o.itemsSummary || "—"}</td>
           <td>${o.date || "—"}</td>
           <td><span class="badge ${statusBadge(o.status)}">${statusLabel(o.status)}</span></td>
@@ -130,7 +130,7 @@ async function loadDashboard() {
     } else {
       debtList.innerHTML = stats.topDebtors.map(c => `
         <li>
-          <span>${c.name} ${c.surname || ""}</span>
+          <span class="customer-link" onclick="openCustomerProfile('${c.id}')">${c.name} ${c.surname || ""}</span>
           <span class="debt-amount">${(c.debt || 0).toFixed(2)} ₼</span>
         </li>
       `).join("");
@@ -192,8 +192,7 @@ function renderCustomers() {
 
   tbody.innerHTML = list.map(c => `
     <tr>
-      <td><strong>${c.name} ${c.surname || ""}</strong></td>
-      <td>${c.phone || "—"}</td>
+      <td><span class="customer-link" onclick="openCustomerProfile('${c.id}')">${c.name} ${c.surname || ""}</span></td>      <td>${c.phone || "—"}</td>
       <td>${c.region || "—"}</td>
       <td>${c.business || "—"}</td>
       <td class="${(c.debt||0) > 0 ? "debt-amount" : ""}">${(c.debt || 0).toFixed(2)} ₼</td>
@@ -451,7 +450,7 @@ function renderOrders() {
 
   tbody.innerHTML = list.map(o => `
     <tr>
-      <td><strong>${o.customerName || "—"}</strong></td>
+      <td><span class="customer-link" onclick="openCustomerProfile('${o.customerId}')">${o.customerName || "—"}</span></td>
       <td>${o.itemsSummary || "—"}</td>
       <td>${o.totalQty ? o.totalQty + " L" : "—"}</td>
       <td>${(o.total || 0).toFixed(2)} ₼</td>
@@ -669,7 +668,7 @@ async function loadDebts() {
     const balance = deposit - debt;
     return `
     <tr>
-      <td><strong>${c.name} ${c.surname || ""}</strong><br><small style="color:var(--text-muted)">${c.phone || ""}</small></td>
+      <td><span class="customer-link" onclick="openCustomerProfile('${c.id}')">${c.name} ${c.surname || ""}</span><br><small style="color:var(--text-muted)">${c.phone || ""}</small></td>
       <td>${c.region || "—"}</td>
       <td class="${debt > 0 ? "debt-amount" : ""}">${debt.toFixed(2)} ₼</td>
       <td style="color:var(--green)">${deposit.toFixed(2)} ₼</td>
@@ -837,6 +836,136 @@ async function init() {
   }
   navigateTo("dashboard");
 }
+
+// ============================================================
+//  MÜŞTƏRİ PROFİL MODAL
+// ============================================================
+window.openCustomerProfile = function(customerId) {
+  const c = window._customers.find(x => x.id === customerId);
+  if (!c) return;
+
+  // Modal başlığı
+  document.getElementById('profileModalName').textContent =
+    `${c.name} ${c.surname || ''}`;
+
+  // Tab-ları sıfırla
+  document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.profile-tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelector('.profile-tab[data-tab="info"]').classList.add('active');
+  document.getElementById('profileTab-info').classList.add('active');
+
+  // Müştəriyə aid sifarişlər
+  const custOrders = (window._orders || [])
+    .filter(o => o.customerId === customerId)
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  const activeOrders = custOrders.filter(o => o.status !== 'delivered');
+
+  // ── Tab 1: Məlumatlar ──
+  const phone = c.phone || '';
+  const phoneClean = phone.replace(/\D/g, '');
+
+  const orderCardsHtml = activeOrders.slice(0, 3).map(o => `
+    <div class="profile-order-card">
+      <div class="profile-order-card-top">
+        <span><strong>${o.date || '—'}</strong></span>
+        <span class="badge ${statusBadge(o.status)}">${statusLabel(o.status)}</span>
+      </div>
+      <div class="profile-order-card-desc">${o.itemsSummary || '—'}</div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:var(--gray-70)">
+        <span>${o.totalQty ? o.totalQty + ' L' : ''}</span>
+        <strong>${(o.total || 0).toFixed(2)} ₼</strong>
+      </div>
+    </div>
+  `).join('');
+
+  const moreNote = activeOrders.length > 3
+    ? `<p class="profile-more-note">+${activeOrders.length - 3} sifariş daha var — Sifarişlər bölümündən baxın</p>`
+    : '';
+
+  document.getElementById('profileTab-info').innerHTML = `
+    <div class="profile-info-grid">
+      <div class="profile-info-item">
+        <span class="profile-info-label">Telefon</span>
+        <span class="profile-info-value">${phone || '—'}</span>
+      </div>
+      <div class="profile-info-item">
+        <span class="profile-info-label">Rayon</span>
+        <span class="profile-info-value">${c.region || '—'}</span>
+      </div>
+      <div class="profile-info-item">
+        <span class="profile-info-label">Obyekt</span>
+        <span class="profile-info-value">${c.business || '—'}</span>
+      </div>
+      <div class="profile-info-item">
+        <span class="profile-info-label">Borc</span>
+        <span class="profile-info-value" style="color:${(c.debt||0)>0?'var(--red)':'var(--green)'}">
+          ${(c.debt || 0).toFixed(2)} ₼
+        </span>
+      </div>
+      <div class="profile-info-item">
+        <span class="profile-info-label">Depozit</span>
+        <span class="profile-info-value" style="color:var(--green)">
+          ${(c.deposit || 0).toFixed(2)} ₼
+        </span>
+      </div>
+      <div class="profile-info-item">
+        <span class="profile-info-label">Son sifariş</span>
+        <span class="profile-info-value">${c.lastOrderDate || '—'}</span>
+      </div>
+    </div>
+
+    ${phone ? `
+    <div class="profile-actions">
+      <a href="tel:${phoneClean}">
+        <i class="ti ti-phone"></i> Zəng et
+      </a>
+      <a href="https://wa.me/${phoneClean}" target="_blank" class="whatsapp">
+        <i class="ti ti-brand-whatsapp"></i> WhatsApp
+      </a>
+    </div>` : ''}
+
+    ${activeOrders.length > 0 ? `
+      <div class="profile-orders-title">Aktiv sifarişlər (${activeOrders.length})</div>
+      ${orderCardsHtml}
+      ${moreNote}
+    ` : `<p style="color:var(--gray-50);font-size:13px">Aktiv sifariş yoxdur</p>`}
+
+    ${c.note ? `
+      <div style="margin-top:12px;padding:10px;background:var(--gray-05);border-radius:var(--radius);font-size:13px;color:var(--gray-70)">
+        <i class="ti ti-note"></i> ${c.note}
+      </div>` : ''}
+  `;
+
+  // ── Tab 2: Sifariş tarixi ──
+  document.getElementById('profileTab-history').innerHTML = custOrders.length === 0
+    ? `<p style="color:var(--gray-50);font-size:13px;padding:8px 0">Hələ sifariş yoxdur</p>`
+    : custOrders.map(o => `
+        <div class="profile-order-card">
+          <div class="profile-order-card-top">
+            <span><strong>${o.date || '—'}</strong></span>
+            <span class="badge ${statusBadge(o.status)}">${statusLabel(o.status)}</span>
+          </div>
+          <div class="profile-order-card-desc">${o.itemsSummary || '—'}</div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:var(--gray-70)">
+            <span>${o.totalQty ? o.totalQty + ' L' : ''}</span>
+            <strong>${(o.total || 0).toFixed(2)} ₼</strong>
+          </div>
+        </div>
+      `).join('');
+
+  openModal('customerProfileModal');
+};
+
+// Tab keçidi
+document.querySelectorAll('.profile-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.profile-tab-content').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('profileTab-' + tab.dataset.tab).classList.add('active');
+  });
+});
 
 window.__initApp = init;
 document.dispatchEvent(new Event('app:ready'));
