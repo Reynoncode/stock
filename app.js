@@ -192,7 +192,8 @@ function renderCustomers() {
 
   tbody.innerHTML = list.map(c => `
     <tr>
-      <td><span class="customer-link" onclick="openCustomerProfile('${c.id}')">${c.name} ${c.surname || ""}</span></td>      <td>${c.phone || "—"}</td>
+      <td><span class="customer-link" onclick="openCustomerProfile('${c.id}')">${c.name} ${c.surname || ""}</span></td>
+      <td>${c.phone || "—"}</td>
       <td>${c.region || "—"}</td>
       <td>${c.business || "—"}</td>
       <td class="${(c.debt||0) > 0 ? "debt-amount" : ""}">${(c.debt || 0).toFixed(2)} ₼</td>
@@ -217,7 +218,7 @@ function populateRegionFilters() {
   const opts = `<option value="">Bütün rayonlar</option>` +
     regions.map(r => `<option value="${r}">${r}</option>`).join("");
 
-  ["customerRegionFilter", "debtRegionFilter", "smartRegionFilter", "exportRegionFilter"].forEach(id => {
+  ["customerRegionFilter", "smartRegionFilter", "exportRegionFilter"].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const cur = el.value;
@@ -351,7 +352,13 @@ function renderStock() {
       <td>${p.type || "—"}</td>
       <td>${p.volume || "—"} L</td>
       <td>${(p.price || 0).toFixed(2)} ₼</td>
-      <td>${p.qty || 0} ədəd</td>
+      <td>
+        <label class="toggle" title="${p.isActive !== false ? 'Aktiv' : 'Deaktiv'}">
+          <input type="checkbox" ${p.isActive !== false ? "checked" : ""}
+            onchange="toggleProductActive('${p.id}', this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      </td>
       <td>
         <button class="btn btn-sm btn-outline" onclick="editProduct('${p.id}')">
           <i class="ti ti-edit"></i>
@@ -369,10 +376,18 @@ document.getElementById("stockSearch")?.addEventListener("input", renderStock);
 document.getElementById("addStockBtn")?.addEventListener("click", () => {
   window._editingProductId = null;
   document.getElementById("stockModalTitle").textContent = "Yeni Məhsul";
-  ["s-brand","s-type","s-volume","s-price","s-qty"].forEach(id => {
+  ["s-brand","s-type","s-volume","s-price"].forEach(id => {
     document.getElementById(id).value = "";
   });
+  const activeEl = document.getElementById("s-isActive");
+  if (activeEl) activeEl.checked = true;
+  const labelEl = document.getElementById("s-isActive-label");
+  if (labelEl) labelEl.textContent = "Aktiv";
   openModal("stockModal");
+});
+
+document.getElementById("s-isActive")?.addEventListener("change", function() {
+  document.getElementById("s-isActive-label").textContent = this.checked ? "Aktiv" : "Deaktiv";
 });
 
 document.getElementById("saveStockBtn")?.addEventListener("click", async () => {
@@ -381,10 +396,10 @@ document.getElementById("saveStockBtn")?.addEventListener("click", async () => {
 
   const data = {
     brand,
-    type:   document.getElementById("s-type").value.trim(),
-    volume: parseFloat(document.getElementById("s-volume").value) || 0,
-    price:  parseFloat(document.getElementById("s-price").value) || 0,
-    qty:    parseInt(document.getElementById("s-qty").value) || 0
+    type:     document.getElementById("s-type").value.trim(),
+    volume:   parseFloat(document.getElementById("s-volume").value) || 0,
+    price:    parseFloat(document.getElementById("s-price").value) || 0,
+    isActive: document.getElementById("s-isActive").checked
   };
 
   try {
@@ -402,6 +417,12 @@ document.getElementById("saveStockBtn")?.addEventListener("click", async () => {
   }
 });
 
+window.toggleProductActive = async (id, isActive) => {
+  await updateProduct(id, { isActive });
+  showToast(isActive ? "Məhsul aktivləşdirildi ✓" : "Məhsul deaktiv edildi");
+  loadStock();
+};
+
 window.editProduct = (id) => {
   const p = window._products.find(x => x.id === id);
   if (!p) return;
@@ -411,7 +432,8 @@ window.editProduct = (id) => {
   document.getElementById("s-type").value   = p.type || "";
   document.getElementById("s-volume").value = p.volume || "";
   document.getElementById("s-price").value  = p.price || "";
-  document.getElementById("s-qty").value    = p.qty || "";
+  document.getElementById("s-isActive").checked = p.isActive !== false;
+  document.getElementById("s-isActive-label").textContent = p.isActive !== false ? "Aktiv" : "Deaktiv";
   openModal("stockModal");
 };
 
@@ -453,13 +475,19 @@ function renderOrders() {
       <td><span class="customer-link" onclick="openCustomerProfile('${o.customerId}')">${o.customerName || "—"}</span></td>
       <td>${o.itemsSummary || "—"}</td>
       <td>${o.totalQty ? o.totalQty + " L" : "—"}</td>
-      <td>${(o.total || 0).toFixed(2)} ₼</td>
+      <td>
+        <div>${(o.total || 0).toFixed(2)} ₼</div>
+        ${o.paidAmount > 0 ? `<small style="color:var(--green)">+${o.paidAmount.toFixed(2)} ₼ ödənilib</small>` : ""}
+        ${o.status === "partial" ? `<small style="color:var(--red)">${Math.max(0,(o.total||0)-(o.paidAmount||0)).toFixed(2)} ₼ qalıq</small>` : ""}
+      </td>
       <td>${o.date || "—"}</td>
       <td><span class="badge ${statusBadge(o.status)}">${statusLabel(o.status)}</span></td>
       <td>
         <select class="status-change-sel" onchange="changeOrderStatus('${o.id}', this.value)" style="font-size:12px;padding:4px 6px">
           <option value="">Status dəyiş...</option>
           <option value="pending">Alındı</option>
+          <option value="paid">Ödənilib</option>
+          <option value="partial">Qismən</option>
           <option value="delivered">Çatdırıldı</option>
           <option value="debt">Borcludur</option>
         </select>
@@ -510,6 +538,22 @@ function openOrderModal() {
   document.getElementById("o-speed").value  = "medium";
   document.getElementById("o-note").value   = "";
 
+  // Ödəniş detail sətirini sıfırla
+  const payRow = document.getElementById("paymentDetailRow");
+  if (payRow) payRow.style.display = "none";
+  const paidAmountEl = document.getElementById("o-paid-amount");
+  const payNoteEl    = document.getElementById("o-payment-note");
+  if (paidAmountEl) paidAmountEl.value = "";
+  if (payNoteEl)    payNoteEl.value    = "";
+
+  // Status dəyişdikdə ödəniş sətirini göstər/gizlət
+  const oStatus = document.getElementById("o-status");
+  oStatus.onchange = () => {
+    if (payRow) {
+      payRow.style.display = ["partial", "paid"].includes(oStatus.value) ? "flex" : "none";
+    }
+  };
+
   openModal("orderModal");
 }
 
@@ -517,9 +561,12 @@ function addOrderItemRow() {
   const container = document.getElementById("orderItems");
   const idx = container.children.length;
 
-  const productOptions = window._products.map(p =>
-    `<option value="${p.id}" data-price="${p.price}" data-volume="${p.volume}">${p.brand} ${p.type || ""} ${p.volume}L — ${p.price} ₼</option>`
-  ).join("");
+  // Yalnız aktiv məhsullar
+  const productOptions = window._products
+    .filter(p => p.isActive !== false)
+    .map(p =>
+      `<option value="${p.id}" data-price="${p.price}" data-volume="${p.volume}">${p.brand} ${p.type || ""} ${p.volume}L — ${p.price} ₼</option>`
+    ).join("");
 
   const row = document.createElement("div");
   row.className = "order-item-row";
@@ -606,6 +653,17 @@ document.getElementById("saveOrderBtn")?.addEventListener("click", async () => {
   const customer     = window._customers.find(c => c.id === customerId);
   const total        = items.reduce((s, i) => s + i.price, 0);
   const itemsSummary = items.map(i => `${i.productName} x${i.qty}`).join(", ");
+  const status       = document.getElementById("o-status").value;
+  const paidAmount   = parseFloat(document.getElementById("o-paid-amount")?.value) || 0;
+  const paymentNote  = document.getElementById("o-payment-note")?.value.trim() || "";
+
+  // Qismən ödənişdə məbləğ yoxlanışı
+  if (status === "partial" && paidAmount <= 0) {
+    showToast("Ödənilən məbləği daxil edin"); return;
+  }
+  if (status === "partial" && paidAmount >= total) {
+    showToast("Qismən ödənişdə məbləğ ümumi məbləğdən az olmalıdır"); return;
+  }
 
   const data = {
     customerId,
@@ -615,9 +673,11 @@ document.getElementById("saveOrderBtn")?.addEventListener("click", async () => {
     itemsSummary,
     total,
     totalQty,
-    status: document.getElementById("o-status").value,
-    speed:  document.getElementById("o-speed").value,
-    note:   document.getElementById("o-note").value.trim()
+    status,
+    speed:        document.getElementById("o-speed").value,
+    note:         document.getElementById("o-note").value.trim(),
+    paidAmount:   ["partial","paid"].includes(status) ? paidAmount : 0,
+    paymentNote
   };
 
   try {
@@ -636,17 +696,56 @@ document.getElementById("saveOrderBtn")?.addEventListener("click", async () => {
 // ============================================================
 async function loadDebts() {
   const customers = window._customers.length ? window._customers : await getCustomers();
-  const region    = document.getElementById("debtRegionFilter")?.value || "";
-  const search    = (document.getElementById("debtSearch")?.value || "").toLowerCase();
+  const orders    = window._orders.length    ? window._orders    : await getOrders();
 
-  let list = customers.filter(c => (c.debt || 0) > 0 || (c.deposit || 0) > 0);
-  if (region) list = list.filter(c => c.region === region);
-  if (search) list = list.filter(c =>
-    (`${c.name} ${c.surname}`).toLowerCase().includes(search)
+  // Filterlər
+  const region     = document.getElementById("debtRegionFilter")?.value    || "";
+  const customerId = document.getElementById("debtCustomerFilter")?.value  || "";
+  const productF   = document.getElementById("debtProductFilter")?.value   || "";
+  const dateFrom   = document.getElementById("debtDateFrom")?.value        || "";
+  const dateTo     = document.getElementById("debtDateTo")?.value          || "";
+
+  // Filter dropdownları doldur
+  _populateDebtFilters(customers, orders);
+
+  // Sifarişləri filtrele
+  let filteredOrders = [...orders];
+  if (dateFrom)   filteredOrders = filteredOrders.filter(o => o.date >= dateFrom);
+  if (dateTo)     filteredOrders = filteredOrders.filter(o => o.date <= dateTo);
+  if (productF)   filteredOrders = filteredOrders.filter(o =>
+    (o.items || []).some(i => i.productId === productF)
   );
+  if (customerId) filteredOrders = filteredOrders.filter(o => o.customerId === customerId);
+  if (region)     filteredOrders = filteredOrders.filter(o => {
+    const c = customers.find(x => x.id === o.customerId);
+    return c?.region === region;
+  });
+
+  // Qazanc hesabla
+  const totalSales = filteredOrders.reduce((s, o) => s + (o.total || 0), 0);
+  const totalDebtFromOrders = filteredOrders
+    .filter(o => ["debt", "partial"].includes(o.status))
+    .reduce((s, o) => {
+      if (o.status === "debt")    return s + (o.total || 0);
+      if (o.status === "partial") return s + Math.max(0, (o.total || 0) - (o.paidAmount || 0));
+      return s;
+    }, 0);
+  const totalCollected = totalSales - totalDebtFromOrders;
+
+  const earnTotal     = document.getElementById("earn-total");
+  const earnCollected = document.getElementById("earn-collected");
+  const earnDebt      = document.getElementById("earn-debt");
+  if (earnTotal)     earnTotal.textContent     = totalSales.toFixed(2) + " ₼";
+  if (earnCollected) earnCollected.textContent = totalCollected.toFixed(2) + " ₼";
+  if (earnDebt)      earnDebt.textContent      = totalDebtFromOrders.toFixed(2) + " ₼";
+
+  // Müştəri borc siyahısı
+  let list = customers.filter(c => (c.debt || 0) > 0 || (c.deposit || 0) > 0);
+  if (region)     list = list.filter(c => c.region === region);
+  if (customerId) list = list.filter(c => c.id === customerId);
   list.sort((a, b) => (b.debt || 0) - (a.debt || 0));
 
-  // Ümumi statistika
+  // Ümumi stat kartları
   const allDebt    = customers.reduce((s, c) => s + (c.debt || 0), 0);
   const allDeposit = customers.reduce((s, c) => s + (c.deposit || 0), 0);
   const totalDebtEl    = document.getElementById("total-debt-val");
@@ -668,11 +767,16 @@ async function loadDebts() {
     const balance = deposit - debt;
     return `
     <tr>
-      <td><span class="customer-link" onclick="openCustomerProfile('${c.id}')">${c.name} ${c.surname || ""}</span><br><small style="color:var(--text-muted)">${c.phone || ""}</small></td>
+      <td>
+        <span class="customer-link" onclick="openCustomerProfile('${c.id}')">${c.name} ${c.surname || ""}</span><br>
+        <small style="color:var(--gray-50)">${c.phone || ""}</small>
+      </td>
       <td>${c.region || "—"}</td>
       <td class="${debt > 0 ? "debt-amount" : ""}">${debt.toFixed(2)} ₼</td>
       <td style="color:var(--green)">${deposit.toFixed(2)} ₼</td>
-      <td class="${balance < 0 ? "debt-amount" : ""}" style="${balance >= 0 ? "color:var(--green)" : ""}">${balance.toFixed(2)} ₼</td>
+      <td class="${balance < 0 ? "debt-amount" : ""}" style="${balance >= 0 ? "color:var(--green)" : ""}">
+        ${balance.toFixed(2)} ₼
+      </td>
       <td>
         <button class="btn btn-sm btn-outline" onclick="openPayment('${c.id}')">
           <i class="ti ti-wallet"></i> Ödəniş
@@ -682,8 +786,68 @@ async function loadDebts() {
   `}).join("");
 }
 
-document.getElementById("debtSearch")?.addEventListener("input", loadDebts);
-document.getElementById("debtRegionFilter")?.addEventListener("change", loadDebts);
+// Filter dropdownlarını doldur (təkrar doldurmamaq üçün yoxlama)
+function _populateDebtFilters(customers, orders) {
+  // Rayon
+  const regionEl = document.getElementById("debtRegionFilter");
+  if (regionEl && regionEl.options.length <= 1) {
+    const regions = [...new Set(customers.map(c => c.region).filter(Boolean))].sort();
+    regions.forEach(r => {
+      const o = document.createElement("option");
+      o.value = r; o.textContent = r;
+      regionEl.appendChild(o);
+    });
+  }
+
+  // Müştəri
+  const custEl = document.getElementById("debtCustomerFilter");
+  if (custEl && custEl.options.length <= 1) {
+    customers.forEach(c => {
+      const o = document.createElement("option");
+      o.value = c.id;
+      o.textContent = `${c.name} ${c.surname || ""}`;
+      custEl.appendChild(o);
+    });
+  }
+
+  // Məhsul
+  const prodEl = document.getElementById("debtProductFilter");
+  if (prodEl && prodEl.options.length <= 1) {
+    window._products.forEach(p => {
+      const o = document.createElement("option");
+      o.value = p.id;
+      o.textContent = `${p.brand} ${p.type || ""} ${p.volume}L`;
+      prodEl.appendChild(o);
+    });
+  }
+}
+
+// Filter event listener-ləri
+["debtRegionFilter","debtCustomerFilter","debtProductFilter",
+ "debtDateFrom","debtDateTo"].forEach(id => {
+  document.getElementById(id)?.addEventListener("change", loadDebts);
+});
+
+document.getElementById("debtFilterReset")?.addEventListener("click", () => {
+  ["debtDateFrom","debtDateTo"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  ["debtRegionFilter","debtCustomerFilter","debtProductFilter"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  // Dropdown-ları sıfırla ki yenidən dolsun
+  ["debtRegionFilter","debtCustomerFilter","debtProductFilter"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = `<option value="">${
+      id === "debtRegionFilter"   ? "Bütün rayonlar"   :
+      id === "debtCustomerFilter" ? "Bütün müştərilər" :
+                                    "Bütün məhsullar"
+    }</option>`;
+  });
+  loadDebts();
+});
 
 // ============================================================
 //  AĞILLI SİYAHI
@@ -718,16 +882,16 @@ async function loadSmartList() {
     return `
     <tr>
       <td>
-        <strong>${c.name} ${c.surname || ""}</strong><br>
-        <small style="color:var(--text-muted)">${c.phone || ""}</small>
+        <span class="customer-link" onclick="openCustomerProfile('${c.id}')">${c.name} ${c.surname || ""}</span><br>
+        <small style="color:var(--gray-50)">${c.phone || ""}</small>
       </td>
       <td>${c.region || "—"}</td>
       <td>${c.lastProduct || "—"}</td>
-      <td>${c.lastOrderDate || "—"}<br><small style="color:var(--text-muted)">${c.daysSinceOrder} gün öncə</small></td>
+      <td>${c.lastOrderDate || "—"}<br><small style="color:var(--gray-50)">${c.daysSinceOrder} gün öncə</small></td>
       <td><span class="badge badge-gray">${speedLabel(speed)}</span></td>
       <td>
         <div style="display:flex;align-items:center;gap:6px">
-          <div style="background:var(--border);border-radius:4px;height:6px;width:60px;overflow:hidden">
+          <div style="background:var(--gray-10);border-radius:4px;height:6px;width:60px;overflow:hidden">
             <div style="background:${pct>=100?"var(--red)":pct>=80?"var(--yellow)":"var(--green)"};height:100%;width:${pct}%"></div>
           </div>
           <span class="badge ${urgency}">${urgLabel} ${pct}%</span>
@@ -766,7 +930,6 @@ window.openOrderModalForCustomer = (customerId) => {
 function loadReports() {
   populateRegionFilters();
 
-  // Export region filter müştərilər siyahısı üçün
   const exportRegionEl = document.getElementById("exportRegionFilter");
   if (exportRegionEl) {
     const regions = [...new Set(window._customers.map(c => c.region).filter(Boolean))].sort();
@@ -774,10 +937,9 @@ function loadReports() {
       regions.map(r => `<option value="${r}">${r}</option>`).join("");
   }
 
-  // Tarix default
-  const today = new Date().toISOString().split("T")[0];
   const fromEl = document.getElementById("reportDateFrom");
   const toEl   = document.getElementById("reportDateTo");
+  const today  = new Date().toISOString().split("T")[0];
   if (fromEl && !fromEl.value) {
     const d = new Date(); d.setMonth(d.getMonth()-1);
     fromEl.value = d.toISOString().split("T")[0];
@@ -785,7 +947,6 @@ function loadReports() {
   if (toEl && !toEl.value) toEl.value = today;
 }
 
-// Export düymələri — export.js yüklənəndə işləyəcək
 document.getElementById("exportCustomersDocx")?.addEventListener("click", () => {
   if (window.exportCustomersDocx) window.exportCustomersDocx();
   else showToast("export.js hələ yüklənməyib");
@@ -811,14 +972,160 @@ document.getElementById("exportOrdersExcel")?.addEventListener("click", () => {
 //  KÖMƏKÇI FUNKSİYALAR
 // ============================================================
 function statusBadge(s) {
-  return { pending: "badge-yellow", delivered: "badge-green", debt: "badge-red" }[s] || "badge-gray";
+  return {
+    pending:   "badge-yellow",
+    delivered: "badge-green",
+    paid:      "badge-green",
+    partial:   "badge-blue",
+    debt:      "badge-red",
+    deposit:   "badge-blue"
+  }[s] || "badge-gray";
 }
+
 function statusLabel(s) {
-  return { pending: "Alındı", delivered: "Çatdırıldı", debt: "Borcludur" }[s] || s;
+  return {
+    pending:   "Alındı",
+    delivered: "Çatdırıldı",
+    paid:      "Ödənilib",
+    partial:   "Qismən",
+    debt:      "Borcludur",
+    deposit:   "Depozit"
+  }[s] || s;
 }
+
 function speedLabel(s) {
   return { fast: "Sürətli", medium: "Orta", slow: "Yavaş" }[s] || "Orta";
 }
+
+// ============================================================
+//  MÜŞTƏRİ PROFİL MODAL
+// ============================================================
+window.openCustomerProfile = function(customerId) {
+  const c = window._customers.find(x => x.id === customerId);
+  if (!c) return;
+
+  document.getElementById("profileModalName").textContent = `${c.name} ${c.surname || ""}`;
+
+  // Tab-ları sıfırla
+  document.querySelectorAll(".profile-tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".profile-tab-content").forEach(t => t.classList.remove("active"));
+  document.querySelector(".profile-tab[data-tab='info']").classList.add("active");
+  document.getElementById("profileTab-info").classList.add("active");
+
+  // Müştəriyə aid sifarişlər
+  const custOrders = (window._orders || [])
+    .filter(o => o.customerId === customerId)
+    .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+
+  const activeOrders = custOrders.filter(o => !["delivered","paid"].includes(o.status));
+
+  const phone      = c.phone || "";
+  const phoneClean = phone.replace(/\D/g, "");
+
+  const orderCardsHtml = activeOrders.slice(0, 3).map(o => `
+    <div class="profile-order-card">
+      <div class="profile-order-card-top">
+        <span><strong>${o.date || "—"}</strong></span>
+        <span class="badge ${statusBadge(o.status)}">${statusLabel(o.status)}</span>
+      </div>
+      <div class="profile-order-card-desc">${o.itemsSummary || "—"}</div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:var(--gray-70)">
+        <span>${o.totalQty ? o.totalQty + " L" : ""}</span>
+        <strong>${(o.total || 0).toFixed(2)} ₼</strong>
+      </div>
+      ${o.paidAmount > 0 ? `<div style="font-size:11px;color:var(--green);margin-top:2px">+${o.paidAmount.toFixed(2)} ₼ ödənilib</div>` : ""}
+    </div>
+  `).join("");
+
+  const moreNote = activeOrders.length > 3
+    ? `<p class="profile-more-note">+${activeOrders.length - 3} sifariş daha var — Sifarişlər bölümündən baxın</p>`
+    : "";
+
+  document.getElementById("profileTab-info").innerHTML = `
+    <div class="profile-info-grid">
+      <div class="profile-info-item">
+        <span class="profile-info-label">Telefon</span>
+        <span class="profile-info-value">${phone || "—"}</span>
+      </div>
+      <div class="profile-info-item">
+        <span class="profile-info-label">Rayon</span>
+        <span class="profile-info-value">${c.region || "—"}</span>
+      </div>
+      <div class="profile-info-item">
+        <span class="profile-info-label">Obyekt</span>
+        <span class="profile-info-value">${c.business || "—"}</span>
+      </div>
+      <div class="profile-info-item">
+        <span class="profile-info-label">Borc</span>
+        <span class="profile-info-value" style="color:${(c.debt||0)>0?"var(--red)":"var(--green)"}">
+          ${(c.debt || 0).toFixed(2)} ₼
+        </span>
+      </div>
+      <div class="profile-info-item">
+        <span class="profile-info-label">Depozit</span>
+        <span class="profile-info-value" style="color:var(--green)">
+          ${(c.deposit || 0).toFixed(2)} ₼
+        </span>
+      </div>
+      <div class="profile-info-item">
+        <span class="profile-info-label">Son sifariş</span>
+        <span class="profile-info-value">${c.lastOrderDate || "—"}</span>
+      </div>
+    </div>
+
+    ${phone ? `
+    <div class="profile-actions">
+      <a href="tel:${phoneClean}">
+        <i class="ti ti-phone"></i> Zəng et
+      </a>
+      <a href="https://wa.me/${phoneClean}" target="_blank" class="whatsapp">
+        <i class="ti ti-brand-whatsapp"></i> WhatsApp
+      </a>
+    </div>` : ""}
+
+    ${activeOrders.length > 0 ? `
+      <div class="profile-orders-title">Aktiv sifarişlər (${activeOrders.length})</div>
+      ${orderCardsHtml}
+      ${moreNote}
+    ` : `<p style="color:var(--gray-50);font-size:13px">Aktiv sifariş yoxdur</p>`}
+
+    ${c.note ? `
+      <div style="margin-top:12px;padding:10px;background:var(--gray-05);border-radius:var(--radius);font-size:13px;color:var(--gray-70)">
+        <i class="ti ti-note"></i> ${c.note}
+      </div>` : ""}
+  `;
+
+  // Tab 2: Sifariş tarixi
+  document.getElementById("profileTab-history").innerHTML = custOrders.length === 0
+    ? `<p style="color:var(--gray-50);font-size:13px;padding:8px 0">Hələ sifariş yoxdur</p>`
+    : custOrders.map(o => `
+        <div class="profile-order-card">
+          <div class="profile-order-card-top">
+            <span><strong>${o.date || "—"}</strong></span>
+            <span class="badge ${statusBadge(o.status)}">${statusLabel(o.status)}</span>
+          </div>
+          <div class="profile-order-card-desc">${o.itemsSummary || "—"}</div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:var(--gray-70)">
+            <span>${o.totalQty ? o.totalQty + " L" : ""}</span>
+            <strong>${(o.total || 0).toFixed(2)} ₼</strong>
+          </div>
+          ${o.paidAmount > 0 ? `<div style="font-size:11px;color:var(--green);margin-top:2px">+${o.paidAmount.toFixed(2)} ₼ ödənilib</div>` : ""}
+          ${o.status === "partial" ? `<div style="font-size:11px;color:var(--red);margin-top:2px">${Math.max(0,(o.total||0)-(o.paidAmount||0)).toFixed(2)} ₼ qalıq borc</div>` : ""}
+        </div>
+      `).join("");
+
+  openModal("customerProfileModal");
+};
+
+// Tab keçidi
+document.querySelectorAll(".profile-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".profile-tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".profile-tab-content").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("profileTab-" + tab.dataset.tab).classList.add("active");
+  });
+});
 
 // ============================================================
 //  INIT
@@ -837,135 +1144,5 @@ async function init() {
   navigateTo("dashboard");
 }
 
-// ============================================================
-//  MÜŞTƏRİ PROFİL MODAL
-// ============================================================
-window.openCustomerProfile = function(customerId) {
-  const c = window._customers.find(x => x.id === customerId);
-  if (!c) return;
-
-  // Modal başlığı
-  document.getElementById('profileModalName').textContent =
-    `${c.name} ${c.surname || ''}`;
-
-  // Tab-ları sıfırla
-  document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.profile-tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelector('.profile-tab[data-tab="info"]').classList.add('active');
-  document.getElementById('profileTab-info').classList.add('active');
-
-  // Müştəriyə aid sifarişlər
-  const custOrders = (window._orders || [])
-    .filter(o => o.customerId === customerId)
-    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-
-  const activeOrders = custOrders.filter(o => o.status !== 'delivered');
-
-  // ── Tab 1: Məlumatlar ──
-  const phone = c.phone || '';
-  const phoneClean = phone.replace(/\D/g, '');
-
-  const orderCardsHtml = activeOrders.slice(0, 3).map(o => `
-    <div class="profile-order-card">
-      <div class="profile-order-card-top">
-        <span><strong>${o.date || '—'}</strong></span>
-        <span class="badge ${statusBadge(o.status)}">${statusLabel(o.status)}</span>
-      </div>
-      <div class="profile-order-card-desc">${o.itemsSummary || '—'}</div>
-      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:var(--gray-70)">
-        <span>${o.totalQty ? o.totalQty + ' L' : ''}</span>
-        <strong>${(o.total || 0).toFixed(2)} ₼</strong>
-      </div>
-    </div>
-  `).join('');
-
-  const moreNote = activeOrders.length > 3
-    ? `<p class="profile-more-note">+${activeOrders.length - 3} sifariş daha var — Sifarişlər bölümündən baxın</p>`
-    : '';
-
-  document.getElementById('profileTab-info').innerHTML = `
-    <div class="profile-info-grid">
-      <div class="profile-info-item">
-        <span class="profile-info-label">Telefon</span>
-        <span class="profile-info-value">${phone || '—'}</span>
-      </div>
-      <div class="profile-info-item">
-        <span class="profile-info-label">Rayon</span>
-        <span class="profile-info-value">${c.region || '—'}</span>
-      </div>
-      <div class="profile-info-item">
-        <span class="profile-info-label">Obyekt</span>
-        <span class="profile-info-value">${c.business || '—'}</span>
-      </div>
-      <div class="profile-info-item">
-        <span class="profile-info-label">Borc</span>
-        <span class="profile-info-value" style="color:${(c.debt||0)>0?'var(--red)':'var(--green)'}">
-          ${(c.debt || 0).toFixed(2)} ₼
-        </span>
-      </div>
-      <div class="profile-info-item">
-        <span class="profile-info-label">Depozit</span>
-        <span class="profile-info-value" style="color:var(--green)">
-          ${(c.deposit || 0).toFixed(2)} ₼
-        </span>
-      </div>
-      <div class="profile-info-item">
-        <span class="profile-info-label">Son sifariş</span>
-        <span class="profile-info-value">${c.lastOrderDate || '—'}</span>
-      </div>
-    </div>
-
-    ${phone ? `
-    <div class="profile-actions">
-      <a href="tel:${phoneClean}">
-        <i class="ti ti-phone"></i> Zəng et
-      </a>
-      <a href="https://wa.me/${phoneClean}" target="_blank" class="whatsapp">
-        <i class="ti ti-brand-whatsapp"></i> WhatsApp
-      </a>
-    </div>` : ''}
-
-    ${activeOrders.length > 0 ? `
-      <div class="profile-orders-title">Aktiv sifarişlər (${activeOrders.length})</div>
-      ${orderCardsHtml}
-      ${moreNote}
-    ` : `<p style="color:var(--gray-50);font-size:13px">Aktiv sifariş yoxdur</p>`}
-
-    ${c.note ? `
-      <div style="margin-top:12px;padding:10px;background:var(--gray-05);border-radius:var(--radius);font-size:13px;color:var(--gray-70)">
-        <i class="ti ti-note"></i> ${c.note}
-      </div>` : ''}
-  `;
-
-  // ── Tab 2: Sifariş tarixi ──
-  document.getElementById('profileTab-history').innerHTML = custOrders.length === 0
-    ? `<p style="color:var(--gray-50);font-size:13px;padding:8px 0">Hələ sifariş yoxdur</p>`
-    : custOrders.map(o => `
-        <div class="profile-order-card">
-          <div class="profile-order-card-top">
-            <span><strong>${o.date || '—'}</strong></span>
-            <span class="badge ${statusBadge(o.status)}">${statusLabel(o.status)}</span>
-          </div>
-          <div class="profile-order-card-desc">${o.itemsSummary || '—'}</div>
-          <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:var(--gray-70)">
-            <span>${o.totalQty ? o.totalQty + ' L' : ''}</span>
-            <strong>${(o.total || 0).toFixed(2)} ₼</strong>
-          </div>
-        </div>
-      `).join('');
-
-  openModal('customerProfileModal');
-};
-
-// Tab keçidi
-document.querySelectorAll('.profile-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.profile-tab-content').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById('profileTab-' + tab.dataset.tab).classList.add('active');
-  });
-});
-
 window.__initApp = init;
-document.dispatchEvent(new Event('app:ready'));
+document.dispatchEvent(new Event("app:ready"));
