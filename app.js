@@ -838,4 +838,5 @@ async function init() {
   navigateTo("dashboard");
 }
 
-// init();
+window.__initApp = init;
+document.dispatchEvent(new Event('app:ready'));
